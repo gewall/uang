@@ -84,6 +84,27 @@ describe("describeActivity", () => {
   });
 });
 
+describe("import/export", () => {
+  it("import, undo, export, backup", () => {
+    expect(
+      describeActivity({ action: "import", entity: "import", diff: { imported: 184, filename: "jago.pdf" } }).title,
+    ).toBe('Mengimport 184 transaksi dari "jago.pdf"');
+    expect(
+      describeActivity({
+        action: "delete",
+        entity: "import",
+        diff: { undo: true, transactions: 184, filename: "jago.pdf" },
+      }).title,
+    ).toBe('Membatalkan import "jago.pdf" (184 transaksi dihapus)');
+    expect(
+      describeActivity({ action: "export", entity: "export", diff: { format: "xlsx", transactions: 10 } }).title,
+    ).toBe("Mengunduh Excel (10 transaksi)");
+    expect(describeActivity({ action: "import", entity: "backup", diff: { transactions: 5 } }).title).toBe(
+      "Memulihkan backup (5 transaksi)",
+    );
+  });
+});
+
 describe("formatValue", () => {
   it("berbagai tipe", () => {
     expect(norm(formatValue("amount", 115_713_073))).toBe("Rp 1.157.130,73");

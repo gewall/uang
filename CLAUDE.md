@@ -100,6 +100,15 @@ Drizzle ORM + PostgreSQL 18 (shared DB di VPS). Plan lengkap: `C:\Users\USER\.cl
 - Log: setiap `logActivity()` baru WAJIB punya terjemahan di `features/activity/describe.ts` (+ test). Simpan nama
   entitas di `diff.name` saat tambah/hapus (riwayat memakai nama saat kejadian). Uang di diff dalam sen; field
   id/ikon/warna ditampilkan "diubah" saja. Jangan pernah menaruh password / API key di `diff`.
-- [ ] Fase 8 — import (Jago PDF, CSV/XLSX) / export
+- [x] Fase 8 — import (Jago PDF, CSV/XLSX) / export (CSV, Excel multi-sheet, backup JSON + restore)
+- Import: parser murni `lib/import/jago.ts` (fixture SINTETIS di `tests/fixtures/jago/`, jangan commit PDF asli),
+  `lib/import/table.ts` (CSV/Excel + pemetaan kolom), `lib/import/plan.ts` = `buildImportPlan()` dipakai IDENTIK di
+  browser (preview) & server (commit). Draft disimpan di `import_batches` (status draft/committed/undone), undo hapus
+  transaksi batch + dompet buatannya. Anti-duplikat via `transactions.external_id` (`jago:<id>` / pasangan `jago:a+b`).
+  Aturan kategori dipelajari ke `categorization_rules`.
+- Restore backup membuat ID baru & memetakan ulang relasi (jangan insert ID lama apa adanya).
+- `/api/*` tanpa sesi → 401 dari `proxy.ts` (bukan redirect).
+- Layout: grid berisi teks `nowrap`/tab panjang → pakai `grid-cols-[minmax(0,1fr)]` supaya tidak melebar keluar kartu.
+- Next 16 menyimpan halaman sebelumnya tersembunyi di DOM (Activity) → di uji E2E batasi selector ke `main:visible`.
 - [ ] Fase 9 — AI rekomendasi
 - [ ] Fase 10 — polishing

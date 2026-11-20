@@ -15,7 +15,8 @@ export type DescribedActivity = {
   /** daftar perubahan field: "Nama: A → B" */
   changes: { label: string; from?: string; to: string }[];
   tone: "default" | "positive" | "danger" | "warning";
-  icon: "plus" | "pencil" | "trash" | "login" | "logout" | "shield" | "archive" | "key" | "copy";
+  icon:
+    "plus" | "pencil" | "trash" | "login" | "logout" | "shield" | "archive" | "key" | "copy" | "upload" | "download";
 };
 
 export const ENTITY_GROUPS = {
@@ -24,6 +25,7 @@ export const ENTITY_GROUPS = {
   kategori: { label: "Kategori", entities: ["category"] },
   budget: { label: "Budget", entities: ["budget"] },
   investasi: { label: "Investasi", entities: ["investment_asset", "investment_txn"] },
+  data: { label: "Import/Export", entities: ["import", "export", "backup"] },
   keamanan: { label: "Keamanan", entities: ["auth", "password", "session"] },
 } as const;
 export type EntityGroup = keyof typeof ENTITY_GROUPS;
@@ -136,6 +138,40 @@ export function describeActivity(a: ActivityInput): DescribedActivity {
       changes: [],
       tone: "warning",
       icon: "logout",
+    };
+  }
+
+  // ── import / export / backup ──
+  if (a.entity === "import") {
+    if (a.action === "delete")
+      return {
+        title: `Membatalkan import ${q(d.filename)} (${d.transactions ?? 0} transaksi dihapus)`.replace(/\s+/g, " "),
+        changes: [],
+        tone: "danger",
+        icon: "trash",
+      };
+    return {
+      title: `Mengimport ${d.imported ?? 0} transaksi dari ${q(d.filename)}`.trim(),
+      changes: [],
+      tone: "positive",
+      icon: "upload",
+    };
+  }
+  if (a.entity === "export") {
+    const fmt = { csv: "CSV", xlsx: "Excel", json: "backup JSON" }[String(d.format)] ?? String(d.format ?? "");
+    return {
+      title: `Mengunduh ${fmt} (${d.transactions ?? 0} transaksi)`,
+      changes: [],
+      tone: "default",
+      icon: "download",
+    };
+  }
+  if (a.entity === "backup") {
+    return {
+      title: `Memulihkan backup (${d.transactions ?? 0} transaksi)`,
+      changes: [],
+      tone: "warning",
+      icon: "upload",
     };
   }
 

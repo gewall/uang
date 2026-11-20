@@ -2,6 +2,7 @@ import {
   Archive,
   ChevronDown,
   Copy,
+  Download,
   KeyRound,
   LogIn,
   LogOut,
@@ -11,6 +12,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   Trash2,
+  Upload,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -41,6 +43,8 @@ const ICONS: Record<DescribedActivity["icon"], LucideIcon> = {
   archive: Archive,
   key: KeyRound,
   copy: Copy,
+  upload: Upload,
+  download: Download,
 };
 
 const TONE: Record<DescribedActivity["tone"], string> = {

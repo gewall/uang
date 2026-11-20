@@ -194,7 +194,7 @@ export const transactions = pgTable(
       .notNull()
       .default(sql`'{}'::text[]`),
     source: transactionSourceEnum().notNull().default("manual"),
-    importBatchId: uuid(),
+    importBatchId: uuid().references((): AnyPgColumn => importBatches.id, { onDelete: "set null" }),
     /** tetap mengubah saldo dompet, tapi tidak dihitung sebagai pemasukan/pengeluaran (mis. beli/jual investasi) */
     excludeFromStats: boolean().notNull().default(false),
     /** ID transaksi dari sumber eksternal (mis. #ID Jago) untuk mencegah import ganda */
@@ -243,6 +243,58 @@ export const budgets = pgTable(
     index("budgets_user_month_idx").on(t.userId, t.month),
     check("budgets_amount_positive", sql`${t.amount} > 0`),
   ],
+);
+
+// ── Import ───────────────────────────────────────────────────────────
+export const importSourceEnum = pgEnum("import_source", ["jago_pdf", "csv", "xlsx"]);
+export const importStatusEnum = pgEnum("import_status", ["draft", "committed", "undone"]);
+
+export const importBatches = pgTable(
+  "import_batches",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    source: importSourceEnum().notNull(),
+    filename: text().notNull(),
+    status: importStatusEnum().notNull().default("draft"),
+    /** hasil parse ter-normalisasi (ImportStatement) — untuk PDF Jago */
+    statement: jsonb().$type<import("@/lib/import/types").ImportStatement>(),
+    /** tabel mentah (header + baris) — untuk CSV/Excel, dipetakan kolomnya di halaman preview */
+    rawTable: jsonb().$type<string[][]>(),
+    period: text(),
+    rowsImported: integer().notNull().default(0),
+    rowsSkipped: integer().notNull().default(0),
+    /** dompet yang dibuat oleh import ini (dihapus lagi saat undo bila kosong) */
+    createdWalletIds: uuid()
+      .array()
+      .notNull()
+      .default(sql`'{}'::uuid[]`),
+    committedAt: timestamp({ withTimezone: true }),
+    ...timestamps,
+  },
+  (t) => [index("import_batches_user_idx").on(t.userId, t.createdAt.desc())],
+);
+
+/** Aturan kategori otomatis: nama pihak lawan mengandung `pattern` → kategori. Dipelajari dari koreksi saat import. */
+export const categorizationRules = pgTable(
+  "categorization_rules",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    kind: categoryKindEnum().notNull(),
+    /** huruf kecil, spasi dinormalisasi */
+    pattern: text().notNull(),
+    categoryId: uuid()
+      .notNull()
+      .references(() => categories.id, { onDelete: "cascade" }),
+    hits: integer().notNull().default(0),
+    ...timestamps,
+  },
+  (t) => [uniqueIndex("categorization_rules_user_kind_pattern_uq").on(t.userId, t.kind, t.pattern)],
 );
 
 // ── Investasi ────────────────────────────────────────────────────────
@@ -334,3 +386,4 @@ export type InvestmentAsset = typeof investmentAssets.$inferSelect;
 export type InvestmentTxn = typeof investmentTxns.$inferSelect;
 export type AssetType = (typeof assetTypeEnum.enumValues)[number];
 export type InvestmentTxnType = (typeof investmentTxnTypeEnum.enumValues)[number];
+export type ImportBatch = typeof importBatches.$inferSelect;

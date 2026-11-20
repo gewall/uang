@@ -1,0 +1,150 @@
+===== PAGE 1 =====
+PENGGUNA CONTOH / 100000000001
+JALAN CONTOH NO. 1
+Kota Contoh
+RINGKASAN SALDO DALAM RUPIAH
+Total Saldo Personal 480.009,87
+KANTONG PERSONAL
+Nama Kantong Mata Uang Saldo Sebelumnya Total Pemasukan Total Pengeluaran Saldo Akhir
+Kantong Utama IDR 100.000,00 +550.012,34 -240.002,47 410.009,87
+Tabungan IDR 0,00 +200.000,00 -150.000,00 50.000,00
+Dolar AS USD 0,00 +0,00 -0,00 0,00
+RDN Sekuritas IDR 0,00 +150.000,00 -130.000,00 20.000,00
+Laporan Keuangan Bulanan - Oktober 2026 Halaman 1 dari 4
+PT Bank Jago Tbk berizin dan diawasi oleh Otoritas Jasa Keuangan (OJK) dan Bank Indonesia, serta merupakan
+peserta penjaminan Lembaga Penjamin Simpanan (LPS). www.jago.com
+===== PAGE 2 =====
+Kantong Utama
+ID Kantong 100000000001
+Akun Aktif, mulai 01 Jan 2024. Mata Uang Dalam IDR.
+Saldo Sebelumnya 100.000,00
+Total Pemasukan +550.012,34
+Total Pengeluaran -240.002,47
+Saldo Akhir 410.009,87
+Tanggal & WaktuSumber/Tujuan Rincian Transaksi Catatan Jumlah Saldo
+01 Okt 2026
+08.15
+TOKO SATU
+DANA
+9360000000000000001
+Pembayaran QRIS
+#ID 261001-AAAA-000001
+-25.000,00 75.000,00
+02 Okt 2026
+09.00
+BUDI CONTOH
+Jago 100000000002
+Transfer Masuk
+#ID 261002-AAAA-000002
+titipan dari
+uang makan +500.000,00 575.000,00
+03 Okt 2026
+10.30
+Tabungan
+Pindah uang antar Kantong
+Tambah Uang Kantong
+#ID 261003-AAAA-000003
+-200.000,00 375.000,00
+Laporan Keuangan Bulanan - Oktober 2026 Halaman 2 dari 4
+PT Bank Jago Tbk berizin dan diawasi oleh Otoritas Jasa Keuangan (OJK) dan Bank Indonesia, serta merupakan
+peserta penjaminan Lembaga Penjamin Simpanan (LPS). www.jago.com
+===== PAGE 3 =====
+Tanggal & WaktuSumber/Tujuan Rincian Transaksi Catatan Jumlah Saldo
+04 Okt 2026
+12.00
+WARUNG DUA
+Pembayaran dengan
+Jago Pay
+#ID 261004-AAAA-000004
+-15.000,00 360.000,00
+05 Okt 2026
+13.45
+PENGGUNA CONTOH
+GoPay 081200000000
+Pencairan Dana dari
+GoPay
+#ID 261005-AAAA-000005
++50.000,00 410.000,00
+31 Okt 2026
+23.59
+Bunga
+Kantong Utama
+Bunga
+#ID 261031-AAAA-000006
++12,34 410.012,34
+31 Okt 2026
+23.59
+Pajak Bunga
+Kantong Utama
+Pajak Bunga
+#ID 261031-AAAA-000007
+-2,47 410.009,87
+Tabungan
+ID Kantong 100000000003
+Akun Aktif, mulai 01 Jan 2025. Mata Uang Dalam IDR.
+Saldo Sebelumnya 0,00
+Total Pemasukan +200.000,00
+Total Pengeluaran -150.000,00
+Saldo Akhir 50.000,00
+Tanggal & WaktuSumber/Tujuan Rincian Transaksi Catatan Jumlah Saldo
+03 Okt 2026
+10.30
+Kantong Utama
+Pindah uang antar Kantong
+Tambah Uang Kantong
+#ID 261003-BBBB-000001
++200.000,00 200.000,00
+20 Okt 2026
+07.00
+RDN Sekuritas
+Pindah uang antar Kantong
+Tambah Uang Kantong
+#ID 261020-BBBB-000002
+-150.000,00 50.000,00
+Dolar AS
+ID Kantong 840000000000001
+Akun Aktif, mulai 01 Mei 2026. Mata Uang Dalam USD.
+Saldo Sebelumnya 0,00
+Total Pemasukan +0,00
+Total Pengeluaran -0,00
+Saldo Akhir 0,00
+Tanggal & WaktuSumber/Tujuan Rincian Transaksi Catatan Jumlah Saldo
+Laporan Keuangan Bulanan - Oktober 2026 Halaman 3 dari 4
+PT Bank Jago Tbk berizin dan diawasi oleh Otoritas Jasa Keuangan (OJK) dan Bank Indonesia, serta merupakan
+peserta penjaminan Lembaga Penjamin Simpanan (LPS). www.jago.com
+===== PAGE 4 =====
+RDN Sekuritas
+ID Kantong 100000000004
+Akun Aktif, mulai 12 Okt 2026. Mata Uang Dalam IDR.
+Saldo Sebelumnya 0,00
+Total Pemasukan +150.000,00
+Total Pengeluaran -130.000,00
+Saldo Akhir 20.000,00
+Tanggal & WaktuSumber/Tujuan Rincian Transaksi Catatan Jumlah Saldo
+20 Okt 2026
+07.00
+Tabungan
+Pindah uang antar Kantong
+Tambah Uang Kantong
+#ID 4900000001
++150.000,00 150.000,00
+21 Okt 2026
+09.10
+Pembelian Saham Pembelian Saham
+#ID 4900000002
+{botd} R-00000001
+Receipt from: pengguna contoh
+-120.000,00 30.000,00
+25 Okt 2026
+16.00
+Penarikan Dana RDN Penarikan Dana RDN
+#ID 4900000003
+PI00000000ABCDE -10.000,00 20.000,00
+NILAI TUKAR MATA UANG
+Mata Uang Nilai Kurs Mata Uang (IDR)
+Dolar Amerika Serikat 1 USD 16.000,00
+INFO PENTING
+* Dokumen ini dibuat oleh sistem dan tidak memerlukan tanda tangan.
+Laporan Keuangan Bulanan - Oktober 2026 Halaman 4 dari 4
+PT Bank Jago Tbk berizin dan diawasi oleh Otoritas Jasa Keuangan (OJK) dan Bank Indonesia, serta merupakan
+peserta penjaminan Lembaga Penjamin Simpanan (LPS). www.jago.com

@@ -9,6 +9,11 @@ export async function proxy(request: NextRequest) {
   const claims = await verifySessionToken(request.cookies.get(SESSION_COOKIE)?.value);
   if (claims) return NextResponse.next();
 
+  // API: jawab 401 (jangan redirect ke halaman login)
+  if (request.nextUrl.pathname.startsWith("/api/")) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
   const url = request.nextUrl.clone();
   const next = request.nextUrl.pathname + request.nextUrl.search;
   url.pathname = "/login";

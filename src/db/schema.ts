@@ -13,12 +13,14 @@ const timestamps = {
 };
 
 export const paletteEnum = pgEnum("palette", ["warm", "cold"]);
+export const themeModeEnum = pgEnum("theme_mode", ["light", "dark", "system"]);
 
 export const users = pgTable("users", {
   id: uuid().primaryKey().defaultRandom(),
   username: text().notNull().unique(),
   passwordHash: text().notNull(),
   palette: paletteEnum().notNull().default("warm"),
+  themeMode: themeModeEnum().notNull().default("system"),
   currency: text().notNull().default("IDR"),
   ...timestamps,
 });

@@ -44,7 +44,15 @@ Drizzle ORM + PostgreSQL 18 (shared DB di VPS). Plan lengkap: `C:\Users\USER\.cl
 - Auth: `proxy.ts` hanya cek tanda tangan JWT; validasi session sebenarnya di `getCurrentUser()` (`src/lib/auth/dal.ts`).
   Dengan `cacheComponents`, komponen yang memanggil `requireUser()`/membaca cookie harus di dalam `<Suspense>`
   (`(app)/loading.tsx` sudah jadi boundary untuk semua halaman app).
-- [ ] Fase 2 — layout & tema Warm/Cold
+- [x] Fase 2 — layout & tema Warm/Cold: sidebar shadcn (collapsible ikon di desktop, sheet di mobile) + bottom nav mobile,
+      4 kombinasi tema, preferensi disimpan di cookie + `users.palette/theme_mode`
+- Tema: JANGAN baca `cookies()` di root layout. `THEME_INIT_SCRIPT` (`src/lib/theme.ts`) di `<head>` memasang
+  `data-palette` + class `dark` sebelum paint; client pakai `useTheme()` (`src/hooks/use-theme.ts`, useSyncExternalStore).
+  Warna: pakai token (`bg-primary`, `text-income`, `text-expense`, `text-warning`, `chart-1..5`), jangan hardcode.
+- Responsif: halaman memakai `PageHeader`; konten di mobile diberi ruang bottom nav (sudah di layout, `pb-28`).
+  Tabel lebar → sediakan versi kartu `md:hidden` (contoh: sesi aktif di settings).
+- Komponen Base UI: `render={<Link/>}` bukan `asChild`; `DropdownMenuLabel` wajib di dalam `DropdownMenuGroup`;
+  jangan pakai `Math.random()`/`Date.now()` di komponen yang di-prerender (cacheComponents).
 - [ ] Fase 3 — dompet & kategori
 - [ ] Fase 4 — transaksi
 - [ ] Fase 5 — budget + dashboard

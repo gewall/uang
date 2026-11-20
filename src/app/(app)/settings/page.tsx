@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { revokeOtherSessions, revokeSession } from "@/features/auth/actions";
 import { ChangePasswordForm } from "@/features/auth/components/change-password-form";
 import { listActiveSessions } from "@/features/auth/queries";
+import { AppearanceSettings } from "@/features/settings/components/appearance-settings";
 import { requireUser } from "@/lib/auth/dal";
 
 export const metadata: Metadata = { title: "Pengaturan" };
@@ -21,72 +23,105 @@ export default async function SettingsPage() {
   const activeSessions = await listActiveSessions(user.id);
 
   return (
-    <div className="grid max-w-4xl gap-6">
-      <h1 className="text-2xl font-semibold">Pengaturan</h1>
+    <div className="grid gap-6">
+      <PageHeader title="Pengaturan" description="Tampilan, keamanan akun, dan sesi login." />
 
       <Card>
         <CardHeader>
-          <CardTitle>Ganti password</CardTitle>
-          <CardDescription>Setelah diganti, semua device lain otomatis dikeluarkan.</CardDescription>
+          <CardTitle>Tampilan</CardTitle>
+          <CardDescription>Tersimpan di akunmu, jadi ikut ke device lain saat login.</CardDescription>
         </CardHeader>
         <CardContent>
-          <ChangePasswordForm />
+          <AppearanceSettings />
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row items-start justify-between gap-4">
-          <div className="grid gap-1.5">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+        <Card>
+          <CardHeader>
+            <CardTitle>Ganti password</CardTitle>
+            <CardDescription>Setelah diganti, semua device lain otomatis dikeluarkan.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChangePasswordForm />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
             <CardTitle>Sesi aktif</CardTitle>
             <CardDescription>Device yang sedang login ke akunmu.</CardDescription>
-          </div>
-          {activeSessions.length > 1 && (
-            <form action={revokeOtherSessions}>
-              <Button type="submit" variant="destructive" size="sm">
-                Keluarkan device lain
-              </Button>
-            </form>
-          )}
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Device</TableHead>
-                <TableHead>IP</TableHead>
-                <TableHead>Login</TableHead>
-                <TableHead className="text-right">Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+            {activeSessions.length > 1 && (
+              <CardAction>
+                <form action={revokeOtherSessions}>
+                  <Button type="submit" variant="destructive" size="sm">
+                    Keluarkan lainnya
+                  </Button>
+                </form>
+              </CardAction>
+            )}
+          </CardHeader>
+          <CardContent>
+            {/* mobile: daftar kartu */}
+            <ul className="grid gap-2 md:hidden">
               {activeSessions.map((s) => (
-                <TableRow key={s.id}>
-                  <TableCell className="max-w-64 truncate" title={s.userAgent ?? undefined}>
-                    {describeUserAgent(s.userAgent)}
-                    {s.id === user.sessionId && (
-                      <Badge variant="secondary" className="ml-2">
-                        sesi ini
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>{s.ip ?? "-"}</TableCell>
-                  <TableCell>{dateFmt.format(s.createdAt)}</TableCell>
-                  <TableCell className="text-right">
-                    {s.id !== user.sessionId && (
-                      <form action={revokeSession.bind(null, s.id)}>
-                        <Button type="submit" variant="ghost" size="sm">
-                          Keluarkan
-                        </Button>
-                      </form>
-                    )}
-                  </TableCell>
-                </TableRow>
+                <li key={s.id} className="flex items-center gap-3 rounded-lg border p-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="flex items-center gap-2 truncate text-sm font-medium">
+                      {describeUserAgent(s.userAgent)}
+                      {s.id === user.sessionId && <Badge variant="secondary">sesi ini</Badge>}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {s.ip ?? "IP tidak diketahui"} · {dateFmt.format(s.createdAt)}
+                    </p>
+                  </div>
+                  {s.id !== user.sessionId && <RevokeButton id={s.id} />}
+                </li>
               ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+            </ul>
+
+            {/* desktop: tabel */}
+            <Table className="hidden md:table">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Device</TableHead>
+                  <TableHead>IP</TableHead>
+                  <TableHead>Login</TableHead>
+                  <TableHead className="text-right">Aksi</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {activeSessions.map((s) => (
+                  <TableRow key={s.id}>
+                    <TableCell className="max-w-56 truncate" title={s.userAgent ?? undefined}>
+                      {describeUserAgent(s.userAgent)}
+                      {s.id === user.sessionId && (
+                        <Badge variant="secondary" className="ml-2">
+                          sesi ini
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>{s.ip ?? "-"}</TableCell>
+                    <TableCell className="whitespace-nowrap">{dateFmt.format(s.createdAt)}</TableCell>
+                    <TableCell className="text-right">{s.id !== user.sessionId && <RevokeButton id={s.id} />}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
     </div>
+  );
+}
+
+function RevokeButton({ id }: { id: string }) {
+  return (
+    <form action={revokeSession.bind(null, id)}>
+      <Button type="submit" variant="ghost" size="sm">
+        Keluarkan
+      </Button>
+    </form>
   );
 }
 

@@ -10,6 +10,7 @@ import { requireUser } from "@/lib/auth/dal";
 import { burnPasswordCheck, hashPassword, verifyPassword } from "@/lib/auth/password";
 import { createSession, destroyCurrentSession, revokeAllSessions } from "@/lib/auth/session";
 import { getRequestMeta } from "@/lib/request";
+import { setThemeCookies } from "@/lib/theme-server";
 import { isLoginLocked, LOGIN_LOCK_MINUTES } from "./rate-limit";
 import { changePasswordSchema, type FormState, loginSchema } from "./schema";
 
@@ -32,7 +33,7 @@ export async function login(_prev: FormState, formData: FormData): Promise<FormS
   }
 
   const [user] = await db
-    .select({ id: users.id, passwordHash: users.passwordHash })
+    .select({ id: users.id, passwordHash: users.passwordHash, palette: users.palette, themeMode: users.themeMode })
     .from(users)
     .where(eq(users.username, username))
     .limit(1);
@@ -51,6 +52,7 @@ export async function login(_prev: FormState, formData: FormData): Promise<FormS
   }
 
   await createSession(user.id, meta);
+  await setThemeCookies(user.palette, user.themeMode); // device baru langsung pakai tema akun
   await logActivity({ userId: user.id, action: "login", entity: "auth", ip: meta.ip, diff: { userAgent: meta.userAgent } });
 
   const next = String(formData.get("next") ?? "");

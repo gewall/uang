@@ -1,45 +1,45 @@
-import Link from "next/link";
 import { Suspense } from "react";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { logout } from "@/features/auth/actions";
+import { AppSidebar } from "@/components/app-shell/app-sidebar";
+import { HeaderTitle } from "@/components/app-shell/header-title";
+import { MobileNav } from "@/components/app-shell/mobile-nav";
+import { ThemeSwitcher } from "@/components/app-shell/theme-switcher";
+import { UserMenu } from "@/components/app-shell/user-menu";
+import { Separator } from "@/components/ui/separator";
+import { SidebarInset, SidebarMenuSkeleton, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { requireUser } from "@/lib/auth/dal";
 
-// Shell sementara (Fase 1). Sidebar + tema Warm/Cold menyusul di Fase 2.
+// Shell statis (prerender) — hanya bagian yang membaca session yang di-stream di dalam <Suspense>.
 export default function AppLayout({ children }: LayoutProps<"/">) {
   return (
-    <div className="flex min-h-svh flex-col">
-      <header className="flex h-14 items-center gap-4 border-b px-4">
-        <Link href="/dashboard" className="font-semibold">
-          uang
-        </Link>
-        <nav className="flex gap-3 text-sm text-muted-foreground">
-          <Link href="/dashboard" className="hover:text-foreground">
-            Dashboard
-          </Link>
-          <Link href="/settings" className="hover:text-foreground">
-            Pengaturan
-          </Link>
-        </nav>
-        <div className="ml-auto">
-          <Suspense fallback={<Skeleton className="h-8 w-32" />}>
-            <UserMenu />
+    <SidebarProvider>
+      <AppSidebar
+        footer={
+          <Suspense fallback={<SidebarMenuSkeleton showIcon />}>
+            <SidebarUser />
           </Suspense>
+        }
+      />
+      <SidebarInset className="min-w-0">
+        <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b bg-background/85 px-3 backdrop-blur-md supports-[backdrop-filter]:bg-background/70 md:rounded-t-xl md:px-4">
+          {/* di mobile menu dibuka dari bottom nav, jadi trigger header hanya untuk md+ */}
+          <SidebarTrigger className="-ml-1 hidden md:inline-flex" />
+          <Separator orientation="vertical" className="mr-1 hidden h-4 data-vertical:self-center md:block" />
+          <HeaderTitle />
+          <div className="ml-auto flex items-center gap-1">
+            <ThemeSwitcher />
+          </div>
+        </header>
+        {/* pb ekstra di mobile supaya konten tidak tertutup bottom nav */}
+        <div className="flex-1 p-4 pb-28 md:p-6 md:pb-8">
+          <div className="mx-auto w-full max-w-6xl">{children}</div>
         </div>
-      </header>
-      <main className="flex-1 p-4 md:p-6">{children}</main>
-    </div>
+      </SidebarInset>
+      <MobileNav />
+    </SidebarProvider>
   );
 }
 
-async function UserMenu() {
+async function SidebarUser() {
   const user = await requireUser();
-  return (
-    <form action={logout} className="flex items-center gap-3 text-sm">
-      <span className="text-muted-foreground">{user.username}</span>
-      <Button type="submit" variant="outline" size="sm">
-        Keluar
-      </Button>
-    </form>
-  );
+  return <UserMenu username={user.username} />;
 }

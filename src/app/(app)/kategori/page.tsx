@@ -1,9 +1,19 @@
-import { Tags } from "lucide-react";
 import type { Metadata } from "next";
-import { ComingSoon } from "@/components/coming-soon";
+import { PageHeader } from "@/components/page-header";
+import { CategoriesView } from "@/features/categories/components/categories-view";
+import { listCategoryTree } from "@/features/categories/queries";
+import { requireUser } from "@/lib/auth/dal";
 
 export const metadata: Metadata = { title: "Kategori" };
 
-export default function Page() {
-  return <ComingSoon title="Kategori" description="Kelompokkan pemasukan dan pengeluaran." phase={3} icon={Tags} />;
+export default async function CategoriesPage() {
+  const user = await requireUser();
+  const tree = await listCategoryTree(user.id);
+
+  return (
+    <div className="grid gap-6">
+      <PageHeader title="Kategori" description="Kelompokkan pemasukan dan pengeluaran, termasuk subkategori." />
+      <CategoriesView tree={tree} />
+    </div>
+  );
 }

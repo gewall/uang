@@ -2,7 +2,21 @@
 // Konvensi: id uuid, user_id, created_at, updated_at; uang = bigint (rupiah, tanpa float).
 // Nama kolom ditulis camelCase di TS, jadi snake_case di DB (casing: "snake_case").
 import { sql } from "drizzle-orm";
-import { index, inet, jsonb, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  type AnyPgColumn,
+  bigint,
+  boolean,
+  index,
+  inet,
+  integer,
+  jsonb,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 const timestamps = {
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
@@ -77,5 +91,69 @@ export const activityLogs = pgTable(
   ],
 );
 
+// ── Dompet ───────────────────────────────────────────────────────────
+export const walletTypeEnum = pgEnum("wallet_type", ["bank", "ewallet", "cash", "credit", "investment", "other"]);
+
+export const wallets = pgTable(
+  "wallets",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text().notNull(),
+    type: walletTypeEnum().notNull().default("bank"),
+    currency: text().notNull().default("IDR"),
+    /** saldo sebelum transaksi pertama yang dicatat, dalam sen */
+    initialBalance: bigint({ mode: "number" }).notNull().default(0),
+    icon: text().notNull().default("wallet"),
+    color: text().notNull().default("slate"),
+    note: text(),
+    /** ID eksternal, mis. "ID Kantong" Bank Jago — untuk mapping otomatis saat import */
+    externalRef: text(),
+    sortOrder: integer().notNull().default(0),
+    archivedAt: timestamp({ withTimezone: true }),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex("wallets_user_name_uq").on(t.userId, t.name),
+    uniqueIndex("wallets_user_external_ref_uq")
+      .on(t.userId, t.externalRef)
+      .where(sql`${t.externalRef} is not null`),
+  ],
+);
+
+// ── Kategori ─────────────────────────────────────────────────────────
+export const categoryKindEnum = pgEnum("category_kind", ["income", "expense"]);
+
+export const categories = pgTable(
+  "categories",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    kind: categoryKindEnum().notNull(),
+    name: text().notNull(),
+    /** satu level subkategori; kalau induk dihapus, anak jadi kategori utama */
+    parentId: uuid().references((): AnyPgColumn => categories.id, { onDelete: "set null" }),
+    icon: text().notNull().default("tag"),
+    color: text().notNull().default("slate"),
+    /** kategori bawaan yang dipakai fitur lain (Bunga, Pajak, Investasi…): tidak bisa dihapus */
+    isSystem: boolean().notNull().default(false),
+    sortOrder: integer().notNull().default(0),
+    archivedAt: timestamp({ withTimezone: true }),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex("categories_user_kind_name_uq").on(t.userId, t.kind, t.name),
+    index("categories_parent_idx").on(t.parentId),
+  ],
+);
+
 export type User = typeof users.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
+export type Wallet = typeof wallets.$inferSelect;
+export type Category = typeof categories.$inferSelect;
+export type WalletType = (typeof walletTypeEnum.enumValues)[number];
+export type CategoryKind = (typeof categoryKindEnum.enumValues)[number];

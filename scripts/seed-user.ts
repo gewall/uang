@@ -8,6 +8,7 @@ import postgres from "postgres";
 import { stdin, stdout } from "node:process";
 import * as schema from "../src/db/schema";
 import { usernameSchema } from "../src/features/auth/schema";
+import { ensureDefaultCategories } from "../src/features/categories/defaults";
 import { hashPassword, PASSWORD_MIN_LENGTH } from "../src/lib/auth/password";
 
 function askHidden(prompt: string): Promise<string> {
@@ -58,8 +59,9 @@ async function main() {
       await db.update(schema.sessions).set({ revokedAt: new Date() }).where(eq(schema.sessions.userId, existing.id));
       console.log(`Password user "${username}" di-reset, semua sesi dicabut.`);
     } else {
-      await db.insert(schema.users).values({ username, passwordHash });
-      console.log(`User "${username}" dibuat.`);
+      const [user] = await db.insert(schema.users).values({ username, passwordHash }).returning({ id: schema.users.id });
+      const n = await ensureDefaultCategories(db, user.id);
+      console.log(`User "${username}" dibuat (+${n} kategori default).`);
     }
   } finally {
     await client.end();

@@ -7,7 +7,9 @@ Drizzle ORM + PostgreSQL 18 (shared DB di VPS). Plan lengkap: `C:\Users\USER\.cl
 
 ## Aturan
 
-- Uang = `bigint` rupiah (integer). Jangan pernah pakai float untuk nominal. Unit investasi = `numeric(24,8)`.
+- Uang = integer **satuan sen (×100)**: `bigint` di DB (`mode: "number"`), `number` integer di JS. Jangan pernah float.
+  Alasan: mutasi Jago punya sen (bunga) & ada Kantong USD. Pakai `src/lib/money.ts` (`formatMoney`, `parseMoneyInput`,
+  `MoneyInput`); tampilan IDR dibulatkan ke rupiah, `precision: "exact"` untuk sen. Unit investasi = `numeric(24,8)`.
 - Semua tabel: `id uuid`, `user_id`, `created_at`, `updated_at`. Semua query di-scope `user_id` dari `requireUser()`,
   bukan dari input client.
 - Pola modul: `src/features/<modul>/{schema.ts (zod), actions.ts (Server Action), queries.ts, components/}`.
@@ -53,7 +55,12 @@ Drizzle ORM + PostgreSQL 18 (shared DB di VPS). Plan lengkap: `C:\Users\USER\.cl
   Tabel lebar → sediakan versi kartu `md:hidden` (contoh: sesi aktif di settings).
 - Komponen Base UI: `render={<Link/>}` bukan `asChild`; `DropdownMenuLabel` wajib di dalam `DropdownMenuGroup`;
   jangan pakai `Math.random()`/`Date.now()` di komponen yang di-prerender (cacheComponents).
-- [ ] Fase 3 — dompet & kategori
+- [x] Fase 3 — dompet & kategori (CRUD, arsip, kategori default + subkategori, `seed:user` ikut membuat kategori default)
+- Komponen form bersama: `ResponsiveDialog` (dialog desktop / bottom sheet mobile), `Field`, `MoneyInput`, `IconPicker`,
+  `ColorPicker` (`src/components/form-fields.tsx`), `ConfirmDialog`, `EntityIcon`. Ikon & warna disimpan sebagai key
+  (`src/lib/appearance-options.ts`). Helper form: `src/lib/form.ts` (`fieldErrorsOf`, `isUniqueViolation`, …).
+- Pola view client: halaman server mengambil data → `<XxxView>` client memegang state dialog + memanggil Server Action
+  via `useTransition`, hasil ditampilkan dengan toast. Lihat `features/wallets/components/wallets-view.tsx`.
 - [ ] Fase 4 — transaksi
 - [ ] Fase 5 — budget + dashboard
 - [ ] Fase 6 — investasi

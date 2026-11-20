@@ -15,6 +15,13 @@
       "when": 1795165798898,
       "tag": "0001_theme_mode",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795166891665,
+      "tag": "0002_wallets_categories",
+      "breakpoints": true
     }
   ]
 }

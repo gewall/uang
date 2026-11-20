@@ -6,6 +6,7 @@ import {
   type AnyPgColumn,
   bigint,
   boolean,
+  check,
   index,
   inet,
   integer,
@@ -151,9 +152,70 @@ export const categories = pgTable(
   ],
 );
 
+// ── Transaksi ────────────────────────────────────────────────────────
+export const transactionTypeEnum = pgEnum("transaction_type", ["income", "expense", "transfer"]);
+export const transactionSourceEnum = pgEnum("transaction_source", ["manual", "import"]);
+
+export const transactions = pgTable(
+  "transactions",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: transactionTypeEnum().notNull(),
+    /** income: dompet penerima; expense: dompet sumber; transfer: dompet asal */
+    walletId: uuid()
+      .notNull()
+      .references(() => wallets.id, { onDelete: "restrict" }),
+    /** hanya untuk transfer */
+    toWalletId: uuid().references(() => wallets.id, { onDelete: "restrict" }),
+    /** null untuk transfer */
+    categoryId: uuid().references(() => categories.id, { onDelete: "restrict" }),
+    /** nominal dalam sen, mata uang dompet asal, selalu > 0 */
+    amount: bigint({ mode: "number" }).notNull(),
+    /** transfer beda mata uang: nominal yang diterima dompet tujuan (sen). null = sama dengan amount */
+    toAmount: bigint({ mode: "number" }),
+    /** biaya transfer/admin, dibebankan ke dompet asal (sen) */
+    fee: bigint({ mode: "number" }).notNull().default(0),
+    occurredAt: timestamp({ withTimezone: true }).notNull(),
+    note: text(),
+    /** pihak lawan, mis. nama merchant / pengirim (dari import) */
+    counterparty: text(),
+    tags: text()
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    source: transactionSourceEnum().notNull().default("manual"),
+    importBatchId: uuid(),
+    /** ID transaksi dari sumber eksternal (mis. #ID Jago) untuk mencegah import ganda */
+    externalId: text(),
+    ...timestamps,
+  },
+  (t) => [
+    index("transactions_user_occurred_idx").on(t.userId, t.occurredAt.desc()),
+    index("transactions_wallet_idx").on(t.walletId),
+    index("transactions_to_wallet_idx").on(t.toWalletId),
+    index("transactions_category_idx").on(t.categoryId),
+    uniqueIndex("transactions_user_external_uq")
+      .on(t.userId, t.externalId)
+      .where(sql`${t.externalId} is not null`),
+    check("transactions_amount_positive", sql`${t.amount} > 0`),
+    check("transactions_fee_nonneg", sql`${t.fee} >= 0`),
+    check("transactions_to_amount_positive", sql`${t.toAmount} is null or ${t.toAmount} > 0`),
+    check(
+      "transactions_shape",
+      sql`(${t.type} = 'transfer' and ${t.toWalletId} is not null and ${t.toWalletId} <> ${t.walletId} and ${t.categoryId} is null)
+       or (${t.type} <> 'transfer' and ${t.toWalletId} is null and ${t.toAmount} is null)`,
+    ),
+  ],
+);
+
 export type User = typeof users.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
 export type Wallet = typeof wallets.$inferSelect;
 export type Category = typeof categories.$inferSelect;
 export type WalletType = (typeof walletTypeEnum.enumValues)[number];
 export type CategoryKind = (typeof categoryKindEnum.enumValues)[number];
+export type Transaction = typeof transactions.$inferSelect;
+export type TransactionType = (typeof transactionTypeEnum.enumValues)[number];

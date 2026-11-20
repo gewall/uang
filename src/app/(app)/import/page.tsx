@@ -5,5 +5,12 @@ import { ComingSoon } from "@/components/coming-soon";
 export const metadata: Metadata = { title: "Import" };
 
 export default function Page() {
-  return <ComingSoon title="Import" description="Import mutasi dari PDF Bank Jago atau file CSV/Excel." phase={8} icon={Upload} />;
+  return (
+    <ComingSoon
+      title="Import"
+      description="Import mutasi dari PDF Bank Jago atau file CSV/Excel."
+      phase={8}
+      icon={Upload}
+    />
+  );
 }

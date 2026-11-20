@@ -53,7 +53,13 @@ export async function login(_prev: FormState, formData: FormData): Promise<FormS
 
   await createSession(user.id, meta);
   await setThemeCookies(user.palette, user.themeMode); // device baru langsung pakai tema akun
-  await logActivity({ userId: user.id, action: "login", entity: "auth", ip: meta.ip, diff: { userAgent: meta.userAgent } });
+  await logActivity({
+    userId: user.id,
+    action: "login",
+    entity: "auth",
+    ip: meta.ip,
+    diff: { userAgent: meta.userAgent },
+  });
 
   const next = String(formData.get("next") ?? "");
   redirect(next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard");

@@ -18,5 +18,7 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   // Semua halaman kecuali login, health check, asset statis, dan file metadata.
-  matcher: ["/((?!login|api/health|_next/static|_next/image|favicon.ico|robots.txt|.*\\.(?:svg|png|jpg|jpeg|webp|ico)$).*)"],
+  matcher: [
+    "/((?!login|api/health|_next/static|_next/image|favicon.ico|robots.txt|.*\\.(?:svg|png|jpg|jpeg|webp|ico)$).*)",
+  ],
 };

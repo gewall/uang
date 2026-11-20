@@ -15,7 +15,9 @@
     "db:studio": "drizzle-kit studio",
     "db:tunnel": "ssh -i C:/Algi/personal-key.pem -N -L 15432:127.0.0.1:5432 gewall@139.190.103.199",
     "db:check": "tsx scripts/db-check.ts",
-    "seed:user": "tsx scripts/seed-user.ts"
+    "seed:user": "tsx scripts/seed-user.ts",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\" \"tests/**/*.ts\" \"scripts/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\" \"tests/**/*.ts\" \"scripts/**/*.ts\""
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
@@ -44,6 +46,7 @@
     "drizzle-kit": "^0.31.11",
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
+    "prettier": "^3.10.1",
     "tailwindcss": "4.3.3",
     "tsx": "^4.23.15",
     "typescript": "^5",

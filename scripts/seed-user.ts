@@ -53,13 +53,19 @@ async function main() {
   const db = drizzle(client, { schema, casing: "snake_case" });
   try {
     const passwordHash = await hashPassword(password);
-    const [existing] = await db.select({ id: schema.users.id }).from(schema.users).where(eq(schema.users.username, username));
+    const [existing] = await db
+      .select({ id: schema.users.id })
+      .from(schema.users)
+      .where(eq(schema.users.username, username));
     if (existing) {
       await db.update(schema.users).set({ passwordHash }).where(eq(schema.users.id, existing.id));
       await db.update(schema.sessions).set({ revokedAt: new Date() }).where(eq(schema.sessions.userId, existing.id));
       console.log(`Password user "${username}" di-reset, semua sesi dicabut.`);
     } else {
-      const [user] = await db.insert(schema.users).values({ username, passwordHash }).returning({ id: schema.users.id });
+      const [user] = await db
+        .insert(schema.users)
+        .values({ username, passwordHash })
+        .returning({ id: schema.users.id });
       const n = await ensureDefaultCategories(db, user.id);
       console.log(`User "${username}" dibuat (+${n} kategori default).`);
     }

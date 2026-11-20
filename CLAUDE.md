@@ -30,6 +30,8 @@ Drizzle ORM + PostgreSQL 18 (shared DB di VPS). Plan lengkap: `C:\Users\USER\.cl
 - `npm run db:check` — cek koneksi DB.
 - `npm run db:generate` / `npm run db:migrate` / `npm run db:studio` — drizzle-kit.
 - `npm run dev` / `npm run build` / `npm run lint` / `npm run typecheck` / `npm test`.
+- `npm run format` / `npm run format:check` — Prettier (printWidth 120) untuk `src/`, `tests/`, `scripts/`
+  (kecuali `src/components/ui` milik shadcn).
 
 ## Environment
 
@@ -61,7 +63,17 @@ Drizzle ORM + PostgreSQL 18 (shared DB di VPS). Plan lengkap: `C:\Users\USER\.cl
   (`src/lib/appearance-options.ts`). Helper form: `src/lib/form.ts` (`fieldErrorsOf`, `isUniqueViolation`, …).
 - Pola view client: halaman server mengambil data → `<XxxView>` client memegang state dialog + memanggil Server Action
   via `useTransition`, hasil ditampilkan dengan toast. Lihat `features/wallets/components/wallets-view.tsx`.
-- [ ] Fase 4 — transaksi
+- [x] Fase 4 — transaksi: income/expense/transfer (biaya admin, transfer beda mata uang via `to_amount`), filter URL,
+      pencarian (teks/kategori/tag/nominal), grup per hari WIB, simpan & tambah lagi, duplikat, shortcut `N`
+- Saldo dompet: SELALU lewat `walletBalanceSql()` / `walletDeltaSql()` (`src/features/wallets/balance.ts`), jangan
+  hitung ulang manual. Bentuk transaksi dijaga CHECK `transactions_shape` di DB; FK dompet/kategori `restrict`.
+- Postgres `ON DELETE RESTRICT` melempar kode **23001** (bukan 23503) → pakai `isForeignKeyViolation()` (cek keduanya).
+- Tanggal: simpan `timestamptz`, input/tampilan selalu WIB via `src/lib/dates.ts` (`toWibInput`, `parseWibInput`,
+  `monthRange`), jangan bergantung TZ server/browser.
+- Drizzle: untuk join tabel yang sama dua kali pakai `alias()` dari `drizzle-orm/pg-core`, BUKAN `aliasedTable()`
+  (tipe hasil select jadi `never`).
+- Filter halaman memakai search param berbahasa Indonesia (`bulan`, `dompet`, `kategori`, `tipe`, `tag`, `q`, `limit`,
+  `baru=1` membuka form tambah). Lihat `features/transactions/filters.ts`.
 - [ ] Fase 5 — budget + dashboard
 - [ ] Fase 6 — investasi
 - [ ] Fase 7 — activity log

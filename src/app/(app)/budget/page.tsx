@@ -5,5 +5,12 @@ import { ComingSoon } from "@/components/coming-soon";
 export const metadata: Metadata = { title: "Budget" };
 
 export default function Page() {
-  return <ComingSoon title="Budget" description="Atur batas pengeluaran per kategori setiap bulan." phase={5} icon={PiggyBank} />;
+  return (
+    <ComingSoon
+      title="Budget"
+      description="Atur batas pengeluaran per kategori setiap bulan."
+      phase={5}
+      icon={PiggyBank}
+    />
+  );
 }

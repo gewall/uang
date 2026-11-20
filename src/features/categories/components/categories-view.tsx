@@ -1,6 +1,18 @@
 "use client";
 
-import { Archive, ArchiveRestore, CornerDownRight, MoreVertical, Pencil, Plus, Sparkles, Tags, Trash2 } from "lucide-react";
+import {
+  Archive,
+  ArchiveRestore,
+  CornerDownRight,
+  MoreVertical,
+  Pencil,
+  Plus,
+  ReceiptText,
+  Sparkles,
+  Tags,
+  Trash2,
+} from "lucide-react";
+import Link from "next/link";
 import { useCallback, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -25,10 +37,7 @@ import type { CategoryNode } from "../queries";
 import { CATEGORY_KIND_LABEL } from "../schema";
 import { CategoryForm } from "./category-form";
 
-type DialogState =
-  | { mode: "create"; parentId?: string }
-  | { mode: "edit"; category: Category }
-  | null;
+type DialogState = { mode: "create"; parentId?: string } | { mode: "edit"; category: Category } | null;
 
 export function CategoriesView({ tree }: { tree: CategoryNode[] }) {
   const [kind, setKind] = useState<CategoryKind>("expense");
@@ -41,9 +50,14 @@ export function CategoriesView({ tree }: { tree: CategoryNode[] }) {
   const visible = ofKind
     .filter((c) => showArchived || !c.archivedAt)
     .map((c) => ({ ...c, children: c.children.filter((k) => showArchived || !k.archivedAt) }));
-  const archivedCount = ofKind.reduce((n, c) => n + (c.archivedAt ? 1 : 0) + c.children.filter((k) => k.archivedAt).length, 0);
+  const archivedCount = ofKind.reduce(
+    (n, c) => n + (c.archivedAt ? 1 : 0) + c.children.filter((k) => k.archivedAt).length,
+    0,
+  );
   const countOf = (k: CategoryKind) =>
-    tree.filter((c) => c.kind === k && !c.archivedAt).reduce((n, c) => n + 1 + c.children.filter((x) => !x.archivedAt).length, 0);
+    tree
+      .filter((c) => c.kind === k && !c.archivedAt)
+      .reduce((n, c) => n + 1 + c.children.filter((x) => !x.archivedAt).length, 0);
 
   const closeDialog = useCallback((message?: string) => {
     setDialog(null);
@@ -61,7 +75,11 @@ export function CategoriesView({ tree }: { tree: CategoryNode[] }) {
   const row = (c: Category, isChild: boolean, childCount = 0) => (
     <li
       key={c.id}
-      className={cn("flex items-center gap-3 py-2.5 pr-1", isChild ? "pl-6 sm:pl-10" : "pl-1", c.archivedAt && "opacity-60")}
+      className={cn(
+        "flex items-center gap-3 py-2.5 pr-1",
+        isChild ? "pl-6 sm:pl-10" : "pl-1",
+        c.archivedAt && "opacity-60",
+      )}
     >
       {isChild && <CornerDownRight className="-ml-4 size-3.5 shrink-0 text-muted-foreground sm:-ml-5" />}
       <EntityIcon icon={c.icon} color={c.color} size={isChild ? "sm" : "md"} />
@@ -80,6 +98,9 @@ export function CategoriesView({ tree }: { tree: CategoryNode[] }) {
           <MoreVertical />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-52">
+          <DropdownMenuItem render={<Link href={`/transaksi?kategori=${c.id}`} />}>
+            <ReceiptText /> Lihat transaksi
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setDialog({ mode: "edit", category: c })}>
             <Pencil /> Edit
           </DropdownMenuItem>
@@ -218,7 +239,13 @@ export function CategoriesView({ tree }: { tree: CategoryNode[] }) {
         title={`Hapus "${toDelete?.name}"?`}
         description="Subkategorinya akan menjadi kategori utama. Kalau kategori sudah dipakai transaksi, arsipkan saja."
         pending={pending}
-        onConfirm={() => toDelete && run(() => deleteCategory(toDelete.id), () => setToDelete(null))}
+        onConfirm={() =>
+          toDelete &&
+          run(
+            () => deleteCategory(toDelete.id),
+            () => setToDelete(null),
+          )
+        }
       />
     </>
   );

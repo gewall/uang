@@ -1,6 +1,16 @@
 "use client";
 
-import { Archive, ArchiveRestore, MoreVertical, Pencil, Plus, Trash2, Wallet as WalletIcon } from "lucide-react";
+import {
+  Archive,
+  ArchiveRestore,
+  MoreVertical,
+  Pencil,
+  Plus,
+  ReceiptText,
+  Trash2,
+  Wallet as WalletIcon,
+} from "lucide-react";
+import Link from "next/link";
 import { type ReactNode, useCallback, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -103,7 +113,9 @@ export function WalletsView({ wallets, summary }: { wallets: WalletWithBalance[]
           >
             <Archive /> Diarsipkan ({archived.length}) {showArchived ? "— sembunyikan" : "— tampilkan"}
           </Button>
-          {showArchived && <div className="grid gap-3 opacity-75 sm:grid-cols-2 xl:grid-cols-3">{archived.map(card)}</div>}
+          {showArchived && (
+            <div className="grid gap-3 opacity-75 sm:grid-cols-2 xl:grid-cols-3">{archived.map(card)}</div>
+          )}
         </section>
       )}
 
@@ -128,7 +140,13 @@ export function WalletsView({ wallets, summary }: { wallets: WalletWithBalance[]
         title={`Hapus "${toDelete?.name}"?`}
         description="Dompet akan dihapus permanen. Kalau hanya tidak dipakai lagi, lebih baik diarsipkan."
         pending={pending}
-        onConfirm={() => toDelete && run(() => deleteWallet(toDelete.id), () => setToDelete(null))}
+        onConfirm={() =>
+          toDelete &&
+          run(
+            () => deleteWallet(toDelete.id),
+            () => setToDelete(null),
+          )
+        }
       />
     </>
   );
@@ -171,16 +189,23 @@ function WalletCard({
           >
             {formatMoney(wallet.balance, wallet.currency as Currency)}
           </p>
-          {wallet.note && <p className="mt-1 line-clamp-2 hidden text-xs text-muted-foreground sm:block">{wallet.note}</p>}
+          {wallet.note && (
+            <p className="mt-1 line-clamp-2 hidden text-xs text-muted-foreground sm:block">{wallet.note}</p>
+          )}
         </div>
         <div className="sm:col-start-3 sm:row-start-1 sm:self-start">
           <DropdownMenu>
             <DropdownMenuTrigger
-              render={<Button variant="ghost" size="icon-sm" aria-label={`Aksi untuk ${wallet.name}`} className="-mr-1" />}
+              render={
+                <Button variant="ghost" size="icon-sm" aria-label={`Aksi untuk ${wallet.name}`} className="-mr-1" />
+              }
             >
               <MoreVertical />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44">
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem render={<Link href={`/transaksi?dompet=${wallet.id}`} />}>
+                <ReceiptText /> Lihat transaksi
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={onEdit}>
                 <Pencil /> Edit
               </DropdownMenuItem>

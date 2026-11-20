@@ -22,9 +22,13 @@ export function isUniqueViolation(err: unknown, constraint?: string): boolean {
   return e?.code === "23505" && (!constraint || e.constraint_name === constraint);
 }
 
-/** Error foreign key Postgres (23503) — mis. kategori masih dipakai transaksi. */
+/**
+ * Baris masih direferensikan FK — mis. dompet/kategori masih dipakai transaksi.
+ * `ON DELETE RESTRICT` melempar 23001 (restrict_violation), `NO ACTION` melempar 23503.
+ */
 export function isForeignKeyViolation(err: unknown): boolean {
-  return findPgError(err)?.code === "23503";
+  const code = findPgError(err)?.code;
+  return code === "23503" || code === "23001";
 }
 
 type PgError = { code?: string; constraint_name?: string };

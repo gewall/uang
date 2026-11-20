@@ -103,7 +103,9 @@ export default async function SettingsPage() {
                     </TableCell>
                     <TableCell>{s.ip ?? "-"}</TableCell>
                     <TableCell className="whitespace-nowrap">{dateFmt.format(s.createdAt)}</TableCell>
-                    <TableCell className="text-right">{s.id !== user.sessionId && <RevokeButton id={s.id} />}</TableCell>
+                    <TableCell className="text-right">
+                      {s.id !== user.sessionId && <RevokeButton id={s.id} />}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

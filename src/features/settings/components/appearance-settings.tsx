@@ -24,7 +24,10 @@ const PREVIEWS: Record<Palette, { label: string; desc: string; light: string[]; 
 function MiniPreview({ colors }: { colors: string[] }) {
   const [bg, primary, secondary, border] = colors;
   return (
-    <div className="flex h-16 flex-1 flex-col gap-1.5 rounded-md p-2" style={{ background: bg, border: `1px solid ${border}` }}>
+    <div
+      className="flex h-16 flex-1 flex-col gap-1.5 rounded-md p-2"
+      style={{ background: bg, border: `1px solid ${border}` }}
+    >
       <div className="h-2 w-1/2 rounded-full" style={{ background: primary }} />
       <div className="flex flex-1 items-end gap-1">
         {[60, 85, 45, 70].map((h, i) => (

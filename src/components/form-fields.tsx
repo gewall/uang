@@ -1,6 +1,7 @@
 "use client";
 
 import { Check } from "lucide-react";
+import type * as React from "react";
 import { type CSSProperties, type ReactNode, useId, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,6 +47,8 @@ export function MoneyInput({
   allowNegative = false,
   invalid,
   autoFocus,
+  size = "default",
+  inputRef,
 }: {
   id?: string;
   name: string;
@@ -54,6 +57,8 @@ export function MoneyInput({
   allowNegative?: boolean;
   invalid?: boolean;
   autoFocus?: boolean;
+  size?: "default" | "lg";
+  inputRef?: React.Ref<HTMLInputElement>;
 }) {
   const [value, setValue] = useState(defaultMinor !== undefined ? formatMoneyInput(defaultMinor) : "");
   const parsed = value ? parseMoneyInput(value) : null;
@@ -62,10 +67,16 @@ export function MoneyInput({
   return (
     <div className="grid gap-1">
       <div className="relative">
-        <span className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-sm text-muted-foreground">
+        <span
+          className={cn(
+            "pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-muted-foreground",
+            size === "lg" ? "left-3 text-lg" : "text-sm",
+          )}
+        >
           {currency === "IDR" ? "Rp" : "$"}
         </span>
         <Input
+          ref={inputRef}
           id={id}
           name={name}
           inputMode="decimal"
@@ -75,7 +86,12 @@ export function MoneyInput({
           value={value}
           onChange={(e) => setValue(e.target.value)}
           aria-invalid={invalid || bad || undefined}
-          className="pl-9 text-base tabular-nums md:text-sm"
+          className={cn(
+            "tabular-nums",
+            size === "lg"
+              ? "h-14 pl-12 text-3xl font-semibold tracking-tight md:text-3xl"
+              : "pl-9 text-base md:text-sm",
+          )}
         />
       </div>
       <p className={cn("text-xs tabular-nums", bad ? "text-destructive" : "text-muted-foreground")}>

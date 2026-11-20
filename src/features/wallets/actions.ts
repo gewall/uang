@@ -6,11 +6,11 @@ import { db } from "@/db";
 import { wallets } from "@/db/schema";
 import { changedFields, logActivity } from "@/lib/activity-log";
 import { requireUser } from "@/lib/auth/dal";
-import { type FormState, fieldErrorsOf, isUniqueViolation } from "@/lib/form";
+import { type FormState, fieldErrorsOf, isForeignKeyViolation, isUniqueViolation } from "@/lib/form";
 import { getRequestMeta } from "@/lib/request";
 import { walletFormSchema } from "./schema";
 
-const PATHS = ["/dompet", "/dashboard"];
+const PATHS = ["/dompet", "/dashboard", "/transaksi"];
 const revalidate = () => PATHS.forEach((p) => revalidatePath(p));
 
 export async function saveWallet(_prev: FormState, formData: FormData): Promise<FormState> {
@@ -27,7 +27,10 @@ export async function saveWallet(_prev: FormState, formData: FormData): Promise<
         .from(wallets)
         .where(and(eq(wallets.id, id), eq(wallets.userId, user.id)));
       if (!before) return { message: "Dompet tidak ditemukan." };
-      await db.update(wallets).set(data).where(and(eq(wallets.id, id), eq(wallets.userId, user.id)));
+      await db
+        .update(wallets)
+        .set(data)
+        .where(and(eq(wallets.id, id), eq(wallets.userId, user.id)));
       const diff = changedFields(before, data);
       if (diff) await logActivity({ userId: user.id, action: "update", entity: "wallet", entityId: id, diff, ip });
       revalidate();
@@ -42,7 +45,14 @@ export async function saveWallet(_prev: FormState, formData: FormData): Promise<
       .insert(wallets)
       .values({ ...data, userId: user.id, sortOrder: (maxOrder ?? -1) + 1 })
       .returning({ id: wallets.id });
-    await logActivity({ userId: user.id, action: "create", entity: "wallet", entityId: created.id, diff: { ...data }, ip });
+    await logActivity({
+      userId: user.id,
+      action: "create",
+      entity: "wallet",
+      entityId: created.id,
+      diff: { ...data },
+      ip,
+    });
     revalidate();
     return { ok: true, message: `Dompet "${data.name}" ditambahkan.` };
   } catch (err) {
@@ -75,11 +85,17 @@ export async function setWalletArchived(id: string, archived: boolean): Promise<
 
 export async function deleteWallet(id: string): Promise<FormState> {
   const user = await requireUser();
-  // Fase 4: dompet yang punya transaksi tidak bisa dihapus (FK restrict) → sarankan arsip.
-  const [row] = await db
-    .delete(wallets)
-    .where(and(eq(wallets.id, id), eq(wallets.userId, user.id)))
-    .returning({ name: wallets.name, initialBalance: wallets.initialBalance });
+  let row: { name: string; initialBalance: number } | undefined;
+  try {
+    [row] = await db
+      .delete(wallets)
+      .where(and(eq(wallets.id, id), eq(wallets.userId, user.id)))
+      .returning({ name: wallets.name, initialBalance: wallets.initialBalance });
+  } catch (err) {
+    // transaksi mereferensikan dompet (FK restrict) → sarankan arsip
+    if (isForeignKeyViolation(err)) return { message: "Dompet ini masih punya transaksi. Arsipkan saja." };
+    throw err;
+  }
   if (!row) return { message: "Dompet tidak ditemukan." };
   const { ip } = await getRequestMeta();
   await logActivity({ userId: user.id, action: "delete", entity: "wallet", entityId: id, diff: { ...row }, ip });

@@ -31,11 +31,7 @@ export function AppSidebar({ footer }: { footer: ReactNode }) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              size="lg"
-              render={<Link href="/dashboard" onClick={closeOnMobile} />}
-              tooltip="uang"
-            >
+            <SidebarMenuButton size="lg" render={<Link href="/dashboard" onClick={closeOnMobile} />} tooltip="uang">
               <span className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                 <Coins className="size-4" />
               </span>

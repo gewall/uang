@@ -35,7 +35,8 @@ export async function saveCategory(_prev: FormState, formData: FormData): Promis
     }
     if (id) {
       const [{ n }] = await db.select({ n: count() }).from(categories).where(eq(categories.parentId, id));
-      if (n > 0) return { fieldErrors: { parentId: ["Kategori ini punya subkategori, jadi tidak bisa dijadikan subkategori"] } };
+      if (n > 0)
+        return { fieldErrors: { parentId: ["Kategori ini punya subkategori, jadi tidak bisa dijadikan subkategori"] } };
     }
   }
 
@@ -46,7 +47,10 @@ export async function saveCategory(_prev: FormState, formData: FormData): Promis
       if (!before) return { message: "Kategori tidak ditemukan." };
       // jenis kategori tidak bisa diubah setelah dibuat (transaksi bergantung padanya)
       const update = { name: data.name, parentId: data.parentId, icon: data.icon, color: data.color };
-      await db.update(categories).set(update).where(and(eq(categories.id, id), eq(categories.userId, user.id)));
+      await db
+        .update(categories)
+        .set(update)
+        .where(and(eq(categories.id, id), eq(categories.userId, user.id)));
       const diff = changedFields(before, update);
       if (diff) await logActivity({ userId: user.id, action: "update", entity: "category", entityId: id, diff, ip });
       revalidate();
@@ -61,7 +65,14 @@ export async function saveCategory(_prev: FormState, formData: FormData): Promis
       .insert(categories)
       .values({ ...data, userId: user.id, sortOrder: (maxOrder ?? -1) + 1 })
       .returning({ id: categories.id });
-    await logActivity({ userId: user.id, action: "create", entity: "category", entityId: created.id, diff: { ...data }, ip });
+    await logActivity({
+      userId: user.id,
+      action: "create",
+      entity: "category",
+      entityId: created.id,
+      diff: { ...data },
+      ip,
+    });
     revalidate();
     return { ok: true, message: `Kategori "${data.name}" ditambahkan.` };
   } catch (err) {

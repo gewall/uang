@@ -17,10 +17,7 @@ export const loginSchema = z.object({
 export const changePasswordSchema = z
   .object({
     currentPassword: z.string().min(1, "Password lama wajib diisi"),
-    newPassword: z
-      .string()
-      .min(PASSWORD_MIN_LENGTH, `Password baru minimal ${PASSWORD_MIN_LENGTH} karakter`)
-      .max(256),
+    newPassword: z.string().min(PASSWORD_MIN_LENGTH, `Password baru minimal ${PASSWORD_MIN_LENGTH} karakter`).max(256),
     confirmPassword: z.string(),
   })
   .refine((v) => v.newPassword === v.confirmPassword, {

@@ -26,9 +26,7 @@ export function UserMenu({ username }: { username: string }) {
       <SidebarMenuItem>
         <form ref={formRef} action={logout} className="hidden" />
         <DropdownMenu>
-          <DropdownMenuTrigger
-            render={<SidebarMenuButton size="lg" className="data-popup-open:bg-sidebar-accent" />}
-          >
+          <DropdownMenuTrigger render={<SidebarMenuButton size="lg" className="data-popup-open:bg-sidebar-accent" />}>
             <Avatar className="size-8 rounded-lg">
               <AvatarFallback className="rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                 {initial}
@@ -45,9 +43,7 @@ export function UserMenu({ username }: { username: string }) {
               <DropdownMenuLabel>Masuk sebagai {username}</DropdownMenuLabel>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              render={<Link href="/settings" onClick={() => isMobile && setOpenMobile(false)} />}
-            >
+            <DropdownMenuItem render={<Link href="/settings" onClick={() => isMobile && setOpenMobile(false)} />}>
               <Settings />
               Pengaturan
             </DropdownMenuItem>

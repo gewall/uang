@@ -66,7 +66,11 @@ export function CategoryForm({
       </Field>
 
       {!hasChildren && (
-        <Field label="Induk" error={err("parentId")} hint="Opsional. Subkategori ikut dijumlahkan ke induknya di laporan.">
+        <Field
+          label="Induk"
+          error={err("parentId")}
+          hint="Opsional. Subkategori ikut dijumlahkan ke induknya di laporan."
+        >
           <Select
             name="parentId"
             items={parentItems}

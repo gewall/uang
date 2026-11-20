@@ -15,20 +15,31 @@ type DefaultCategory = {
 
 export const DEFAULT_CATEGORIES: Record<CategoryKind, DefaultCategory[]> = {
   expense: [
-    { name: "Makan & Minum", icon: "utensils", color: "amber", children: [
-      { name: "Jajan & Kopi", icon: "coffee", color: "amber" },
-    ] },
-    { name: "Belanja", icon: "shopping-bag", color: "rose", children: [
-      { name: "Kebutuhan Rumah", icon: "shopping-cart", color: "rose" },
-      { name: "Pakaian", icon: "shirt", color: "rose" },
-    ] },
-    { name: "Transportasi", icon: "bus", color: "sky", children: [
-      { name: "Bensin", icon: "fuel", color: "sky" },
-    ] },
-    { name: "Tagihan", icon: "receipt", color: "slate", children: [
-      { name: "Listrik", icon: "zap", color: "slate" },
-      { name: "Internet & Pulsa", icon: "wifi", color: "slate" },
-    ] },
+    {
+      name: "Makan & Minum",
+      icon: "utensils",
+      color: "amber",
+      children: [{ name: "Jajan & Kopi", icon: "coffee", color: "amber" }],
+    },
+    {
+      name: "Belanja",
+      icon: "shopping-bag",
+      color: "rose",
+      children: [
+        { name: "Kebutuhan Rumah", icon: "shopping-cart", color: "rose" },
+        { name: "Pakaian", icon: "shirt", color: "rose" },
+      ],
+    },
+    { name: "Transportasi", icon: "bus", color: "sky", children: [{ name: "Bensin", icon: "fuel", color: "sky" }] },
+    {
+      name: "Tagihan",
+      icon: "receipt",
+      color: "slate",
+      children: [
+        { name: "Listrik", icon: "zap", color: "slate" },
+        { name: "Internet & Pulsa", icon: "wifi", color: "slate" },
+      ],
+    },
     { name: "Langganan", icon: "repeat", color: "indigo" },
     { name: "Rumah", icon: "house", color: "stone" },
     { name: "Kesehatan", icon: "heart-pulse", color: "emerald" },
@@ -78,7 +89,14 @@ export async function ensureDefaultCategories(db: AnyDb, userId: string): Promis
         const [existing] = await db
           .select({ id: categories.id })
           .from(categories)
-          .where(and(eq(categories.userId, userId), eq(categories.kind, kind), eq(categories.name, p.name), isNull(categories.parentId)));
+          .where(
+            and(
+              eq(categories.userId, userId),
+              eq(categories.kind, kind),
+              eq(categories.name, p.name),
+              isNull(categories.parentId),
+            ),
+          );
         parentId = existing?.id;
       }
       if (!parentId || !children?.length) continue;

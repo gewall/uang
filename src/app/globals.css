@@ -24,6 +24,8 @@
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
   --color-income: var(--income);
+  --color-chart-income: var(--chart-income);
+  --color-chart-expense: var(--chart-expense);
   --color-expense: var(--expense);
   --color-warning: var(--warning);
   --color-ring: var(--ring);
@@ -55,6 +57,8 @@
  * Tema: 2 palet (data-palette="warm" | "cold") × 2 mode (class "dark").
  * Atribut & class dipasang sebelum paint oleh inline script di <head> (src/lib/theme.ts).
  * Token semantik tambahan: --income (pemasukan), --expense (pengeluaran), --warning (budget hampir habis).
+ * --chart-income / --chart-expense: pasangan khusus grafik, dibedakan lewat lightness supaya lolos uji buta warna
+ * (validator dataviz: CVD ΔE ≥ 14 di keempat tema). Jangan dipakai untuk teks.
  */
 
 /* ── Warm · light: krem, terakota, amber ───────────────────────────── */
@@ -85,6 +89,8 @@
   --chart-4: oklch(0.6 0.14 10);
   --chart-5: oklch(0.48 0.07 55);
   --income: oklch(0.55 0.13 145);
+  --chart-income: oklch(0.72 0.13 145);
+  --chart-expense: oklch(0.48 0.17 32);
   --expense: oklch(0.57 0.18 32);
   --warning: oklch(0.72 0.15 70);
   --sidebar: oklch(0.965 0.02 78);
@@ -124,6 +130,8 @@
   --chart-4: oklch(0.68 0.14 12);
   --chart-5: oklch(0.82 0.08 85);
   --income: oklch(0.74 0.14 145);
+  --chart-income: oklch(0.66 0.13 145);
+  --chart-expense: oklch(0.51 0.15 34);
   --expense: oklch(0.7 0.16 34);
   --warning: oklch(0.8 0.14 78);
   --sidebar: oklch(0.215 0.016 52);
@@ -162,6 +170,8 @@
   --chart-4: oklch(0.76 0.1 215);
   --chart-5: oklch(0.52 0.03 252);
   --income: oklch(0.56 0.11 172);
+  --chart-income: oklch(0.72 0.11 172);
+  --chart-expense: oklch(0.48 0.16 18);
   --expense: oklch(0.57 0.17 18);
   --warning: oklch(0.72 0.14 75);
   --sidebar: oklch(0.965 0.01 240);
@@ -200,6 +210,8 @@
   --chart-4: oklch(0.65 0.14 250);
   --chart-5: oklch(0.8 0.04 240);
   --income: oklch(0.75 0.12 170);
+  --chart-income: oklch(0.66 0.11 170);
+  --chart-expense: oklch(0.51 0.15 18);
   --expense: oklch(0.7 0.15 18);
   --warning: oklch(0.8 0.13 80);
   --sidebar: oklch(0.205 0.028 258);

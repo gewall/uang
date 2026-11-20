@@ -1,5 +1,5 @@
 // Skema database. Tabel ditambahkan per fase (lihat CLAUDE.md).
-// Konvensi: id uuid, user_id, created_at, updated_at; uang = bigint (rupiah, tanpa float).
+// Konvensi: id uuid, user_id, created_at, updated_at; uang = bigint satuan sen (×100), tanpa float.
 // Nama kolom ditulis camelCase di TS, jadi snake_case di DB (casing: "snake_case").
 import { sql } from "drizzle-orm";
 import {
@@ -7,6 +7,7 @@ import {
   bigint,
   boolean,
   check,
+  date,
   index,
   inet,
   integer,
@@ -208,6 +209,31 @@ export const transactions = pgTable(
       sql`(${t.type} = 'transfer' and ${t.toWalletId} is not null and ${t.toWalletId} <> ${t.walletId} and ${t.categoryId} is null)
        or (${t.type} <> 'transfer' and ${t.toWalletId} is null and ${t.toAmount} is null)`,
     ),
+  ],
+);
+
+// ── Budget ───────────────────────────────────────────────────────────
+export const budgets = pgTable(
+  "budgets",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** kategori pengeluaran; budget induk mencakup subkategorinya */
+    categoryId: uuid()
+      .notNull()
+      .references(() => categories.id, { onDelete: "cascade" }),
+    /** tanggal 1 bulan tersebut, "YYYY-MM-01" */
+    month: date({ mode: "string" }).notNull(),
+    /** batas pengeluaran (sen) */
+    amount: bigint({ mode: "number" }).notNull(),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex("budgets_user_category_month_uq").on(t.userId, t.categoryId, t.month),
+    index("budgets_user_month_idx").on(t.userId, t.month),
+    check("budgets_amount_positive", sql`${t.amount} > 0`),
   ],
 );
 

@@ -74,7 +74,16 @@ Drizzle ORM + PostgreSQL 18 (shared DB di VPS). Plan lengkap: `C:\Users\USER\.cl
   (tipe hasil select jadi `never`).
 - Filter halaman memakai search param berbahasa Indonesia (`bulan`, `dompet`, `kategori`, `tipe`, `tag`, `q`, `limit`,
   `baru=1` membuka form tambah). Lihat `features/transactions/filters.ts`.
-- [ ] Fase 5 — budget + dashboard
+- [x] Fase 5 — budget + dashboard: budget per kategori/bulan (induk mencakup subkategori, tanpa hitung dobel),
+      saran rata-rata 3 bulan, salin dari bulan lalu, pengeluaran tanpa budget, sisa per hari; dashboard: kekayaan
+      bersih, pemasukan/pengeluaran + delta, grafik arus kas 6 bulan (Recharts) + tabel, top pengeluaran, budget,
+      saldo dompet, transaksi terbaru
+- Logika budget murni ada di `features/budgets/math.ts` (diunit-test); agregat SQL bersama di
+  `features/reports/aggregates.ts` (hanya dompet IDR). Saat GROUP BY ekspresi dengan zona waktu, tulis TZ sebagai
+  literal (`sql.raw`), bukan parameter.
+- Grafik: ikuti skill dataviz. Seri pemasukan/pengeluaran memakai `--chart-income` / `--chart-expense` (dibedakan
+  lightness, lolos validator CVD di 4 tema) — jangan pakai `--income/--expense` (token teks) untuk mark grafik.
+  Sediakan tampilan tabel + legend urutan tetap. Status meter: hijau (`income`) → `warning` → `expense` + ikon & teks.
 - [ ] Fase 6 — investasi
 - [ ] Fase 7 — activity log
 - [ ] Fase 8 — import (Jago PDF, CSV/XLSX) / export

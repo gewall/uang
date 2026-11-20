@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeftRight, Plus, ReceiptText } from "lucide-react";
+import { ArrowLeftRight, Plus, ReceiptText, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState, useTransition } from "react";
@@ -53,6 +53,7 @@ export function TransactionsView({ items, hasMore, moreHref, categories, wallets
   const [draft, setDraft] = useState<TransactionDraft | null>(openNew ? { type: "expense" } : null);
   const [formKey, setFormKey] = useState(0);
   const [toDelete, setToDelete] = useState<string | null>(null);
+  const [linked, setLinked] = useState<TransactionRow | null>(null);
   const [pending, startTransition] = useTransition();
 
   // buka form saat ?baru=1 muncul (juga saat sudah berada di halaman ini)
@@ -133,7 +134,7 @@ export function TransactionsView({ items, hasMore, moreHref, categories, wallets
           {[...groups.entries()].map(([day, rows]) => {
             const net = rows.reduce(
               (n, t) =>
-                t.walletCurrency !== "IDR"
+                t.walletCurrency !== "IDR" || t.excludeFromStats
                   ? n
                   : t.type === "income"
                     ? n + t.amount
@@ -156,7 +157,10 @@ export function TransactionsView({ items, hasMore, moreHref, categories, wallets
                   <ul className="divide-y">
                     {rows.map((t) => (
                       <li key={t.id}>
-                        <TransactionRowItem t={t} onClick={() => setDraft(toDraft(t))} />
+                        <TransactionRowItem
+                          t={t}
+                          onClick={() => (t.investmentAssetId ? setLinked(t) : setDraft(toDraft(t)))}
+                        />
                       </li>
                     ))}
                   </ul>
@@ -198,6 +202,24 @@ export function TransactionsView({ items, hasMore, moreHref, categories, wallets
             onDelete={() => draft.id && setToDelete(draft.id)}
           />
         )}
+      </ResponsiveDialog>
+
+      <ResponsiveDialog
+        open={linked !== null}
+        onOpenChange={(o) => !o && setLinked(null)}
+        title="Transaksi investasi"
+        description="Transaksi ini dibuat dari pencatatan investasi, jadi diubah atau dihapus dari halaman asetnya supaya riwayat aset tetap konsisten."
+      >
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button variant="outline" onClick={() => setLinked(null)}>
+            Tutup
+          </Button>
+          {linked?.investmentAssetId && (
+            <Button render={<Link href={`/investasi/${linked.investmentAssetId}`} />} nativeButton={false}>
+              <TrendingUp /> Buka halaman aset
+            </Button>
+          )}
+        </div>
       </ResponsiveDialog>
 
       <ConfirmDialog
@@ -248,6 +270,11 @@ function TransactionRowItem({ t, onClick }: { t: TransactionRow; onClick: () => 
         <span className="block truncate text-sm font-medium">{title}</span>
         <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <span className="truncate">{sub}</span>
+          {t.investmentAssetId && (
+            <Badge variant="outline" className="h-4 shrink-0 px-1.5 text-[10px]">
+              investasi
+            </Badge>
+          )}
           {t.tags.slice(0, 2).map((tag) => (
             <Badge key={tag} variant="secondary" className="hidden h-4 px-1.5 text-[10px] sm:inline-flex">
               #{tag}

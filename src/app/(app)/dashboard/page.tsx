@@ -44,11 +44,12 @@ export default async function DashboardPage() {
           icon={<Landmark className="size-4 text-primary" />}
           value={formatMoney(d.netWorth)}
           compactValue={formatMoney(d.netWorth, "IDR", { compact: true })}
-          footer={
-            d.foreign.length > 0
-              ? `+ ${d.foreign.map(([c, v]) => formatMoney(v, c as Currency)).join(" · ")}`
-              : `${d.wallets.length} dompet aktif`
-          }
+          footer={[
+            d.investments > 0
+              ? `termasuk investasi ${formatMoney(d.investments, "IDR", { compact: true })}`
+              : `${d.wallets.length} dompet aktif`,
+            ...d.foreign.map(([c, v]) => `+ ${formatMoney(v, c as Currency)}`),
+          ].join(" · ")}
           href="/dompet"
         />
         <StatTile

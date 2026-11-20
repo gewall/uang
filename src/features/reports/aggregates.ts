@@ -4,7 +4,8 @@ import { db } from "@/db";
 import { categories, transactions, wallets } from "@/db/schema";
 import { monthRange, shiftMonth, TZ } from "@/lib/dates";
 
-// Catatan: semua agregat hanya menghitung dompet IDR (dompet USD ditampilkan terpisah, tanpa kurs).
+// Catatan: semua agregat hanya menghitung dompet IDR (dompet USD ditampilkan terpisah, tanpa kurs)
+// dan mengabaikan transaksi exclude_from_stats (mis. beli/jual investasi).
 
 /** Pengeluaran per category_id (sen) dalam rentang [start, end). */
 export async function expenseByCategory(userId: string, start: Date, end: Date): Promise<Map<string, number>> {
@@ -20,6 +21,7 @@ export async function expenseByCategory(userId: string, start: Date, end: Date):
         eq(transactions.userId, userId),
         eq(transactions.type, "expense"),
         eq(wallets.currency, "IDR"),
+        eq(transactions.excludeFromStats, false),
         isNotNull(transactions.categoryId),
         gte(transactions.occurredAt, start),
         lt(transactions.occurredAt, end),
@@ -62,6 +64,7 @@ export async function monthlyCashflow(userId: string, month: string, count = 6) 
       and(
         eq(transactions.userId, userId),
         eq(wallets.currency, "IDR"),
+        eq(transactions.excludeFromStats, false),
         gte(transactions.occurredAt, start),
         lt(transactions.occurredAt, end),
       ),

@@ -5,11 +5,22 @@ import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import { categories, type CategoryKind } from "@/db/schema";
 import type { ColorKey, IconKey } from "@/lib/appearance-options";
 
+/** Penanda tetap kategori sistem (dipakai fitur investasi & import Jago). */
+export const SYSTEM_CATEGORY = {
+  admin_fee: "expense",
+  tax: "expense",
+  investment: "expense",
+  interest: "income",
+  investment_return: "income",
+} as const;
+export type SystemCategoryKey = keyof typeof SYSTEM_CATEGORY;
+
 type DefaultCategory = {
   name: string;
   icon: IconKey;
   color: ColorKey;
   isSystem?: boolean;
+  systemKey?: SystemCategoryKey;
   children?: Omit<DefaultCategory, "children">[];
 };
 
@@ -47,9 +58,9 @@ export const DEFAULT_CATEGORIES: Record<CategoryKind, DefaultCategory[]> = {
     { name: "Hiburan", icon: "gamepad", color: "violet" },
     { name: "Keluarga", icon: "users", color: "terracotta" },
     { name: "Hadiah & Donasi", icon: "gift", color: "rose" },
-    { name: "Biaya Admin", icon: "landmark", color: "slate", isSystem: true },
-    { name: "Pajak", icon: "badge-percent", color: "stone", isSystem: true },
-    { name: "Investasi", icon: "trending-up", color: "teal", isSystem: true },
+    { name: "Biaya Admin", systemKey: "admin_fee", icon: "landmark", color: "slate", isSystem: true },
+    { name: "Pajak", systemKey: "tax", icon: "badge-percent", color: "stone", isSystem: true },
+    { name: "Investasi", systemKey: "investment", icon: "trending-up", color: "teal", isSystem: true },
     { name: "Lainnya", icon: "tag", color: "slate" },
   ],
   income: [
@@ -58,8 +69,8 @@ export const DEFAULT_CATEGORIES: Record<CategoryKind, DefaultCategory[]> = {
     { name: "Usaha & Freelance", icon: "laptop", color: "blue" },
     { name: "Pemberian", icon: "hand-heart", color: "rose" },
     { name: "Penjualan", icon: "store", color: "terracotta" },
-    { name: "Bunga", icon: "percent", color: "teal", isSystem: true },
-    { name: "Hasil Investasi", icon: "trending-up", color: "teal", isSystem: true },
+    { name: "Bunga", systemKey: "interest", icon: "percent", color: "teal", isSystem: true },
+    { name: "Hasil Investasi", systemKey: "investment_return", icon: "trending-up", color: "teal", isSystem: true },
     { name: "Lainnya", icon: "tag", color: "slate" },
   ],
 };

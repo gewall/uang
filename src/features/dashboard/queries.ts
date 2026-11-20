@@ -3,6 +3,7 @@ import { currentMonth, monthRange } from "@/lib/dates";
 import { getBudgetOverview } from "../budgets/queries";
 import { rollupToRoot } from "../budgets/math";
 import { categoryRefs, expenseByCategory, monthlyCashflow } from "../reports/aggregates";
+import { listPortfolio } from "../investments/queries";
 import { listTransactions } from "../transactions/queries";
 import { listWallets } from "../wallets/queries";
 
@@ -10,17 +11,20 @@ export async function getDashboard(userId: string, now = new Date()) {
   const month = currentMonth(now);
   const { start, end } = monthRange(month);
 
-  const [wallets, cashflow, cats, spent, budget, recent] = await Promise.all([
+  const [wallets, cashflow, cats, spent, budget, recent, portfolio] = await Promise.all([
     listWallets(userId),
     monthlyCashflow(userId, month, 6),
     categoryRefs(userId),
     expenseByCategory(userId, start, end),
     getBudgetOverview(userId, month, now),
     listTransactions(userId, { month, limit: 6 }),
+    listPortfolio(userId),
   ]);
 
   const active = wallets.filter((w) => !w.archivedAt);
-  const netWorth = active.filter((w) => w.currency === "IDR").reduce((n, w) => n + w.balance, 0);
+  const cash = active.filter((w) => w.currency === "IDR").reduce((n, w) => n + w.balance, 0);
+  const investments = portfolio.summary.marketValue;
+  const netWorth = cash + investments;
   const foreign = new Map<string, number>();
   for (const w of active) if (w.currency !== "IDR") foreign.set(w.currency, (foreign.get(w.currency) ?? 0) + w.balance);
 
@@ -49,6 +53,8 @@ export async function getDashboard(userId: string, now = new Date()) {
   return {
     month,
     netWorth,
+    cash,
+    investments,
     foreign: [...foreign.entries()],
     wallets: active,
     cashflow,

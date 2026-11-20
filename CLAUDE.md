@@ -84,7 +84,17 @@ Drizzle ORM + PostgreSQL 18 (shared DB di VPS). Plan lengkap: `C:\Users\USER\.cl
 - Grafik: ikuti skill dataviz. Seri pemasukan/pengeluaran memakai `--chart-income` / `--chart-expense` (dibedakan
   lightness, lolos validator CVD di 4 tema) — jangan pakai `--income/--expense` (token teks) untuk mark grafik.
   Sediakan tampilan tabel + legend urutan tetap. Status meter: hijau (`income`) → `warning` → `expense` + ikon & teks.
-- [ ] Fase 6 — investasi
+- [x] Fase 6 — investasi: aset (7 jenis, harga manual), beli/jual/dividen (unit s.d. 8 desimal), average cost,
+      untung belum/sudah terealisasi, alokasi (segmented bar), detail aset `/investasi/[id]`, nilai masuk kekayaan bersih
+- Investasi: logika murni `features/investments/math.ts` (diunit-test). Transaksi dompet tertaut dibuat dalam
+  `db.transaction` bersama `investment_txns`; beli/jual → `exclude_from_stats = true` (pindah uang, bukan konsumsi),
+  dividen dihitung pemasukan. Transaksi tertaut DIKUNCI di halaman Transaksi (server menolak edit/hapus).
+- `transactions.exclude_from_stats`: semua agregat statistik wajib memfilter `= false`.
+- Kategori sistem dicari lewat `categories.system_key` (`getSystemCategoryId()`), bukan nama — lihat `SYSTEM_CATEGORY`.
+- Warna identitas kategorikal: `--cat-1..7` (palet tervalidasi dataviz), urutan tetap per entitas (`ASSET_TYPES[].slot`).
+- Route dinamis + `cacheComponents`: komponen yang memakai `usePathname()` di layout harus di dalam `<Suspense>`
+  (sudah: nav sidebar, bottom nav, judul header) — kalau tidak, build gagal di route `[param]`.
+- Unit (kuantitas) diparse dengan `parseQuantity()` (`src/lib/number.ts`), format Indonesia.
 - [ ] Fase 7 — activity log
 - [ ] Fase 8 — import (Jago PDF, CSV/XLSX) / export
 - [ ] Fase 9 — AI rekomendasi

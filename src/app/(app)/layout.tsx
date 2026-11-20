@@ -24,7 +24,9 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
           {/* di mobile menu dibuka dari bottom nav, jadi trigger header hanya untuk md+ */}
           <SidebarTrigger className="-ml-1 hidden md:inline-flex" />
           <Separator orientation="vertical" className="mr-1 hidden h-4 data-vertical:self-center md:block" />
-          <HeaderTitle />
+          <Suspense fallback={<span className="text-sm font-medium">uang</span>}>
+            <HeaderTitle />
+          </Suspense>
           <div className="ml-auto flex items-center gap-1">
             <ThemeSwitcher />
           </div>

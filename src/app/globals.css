@@ -24,6 +24,13 @@
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
   --color-income: var(--income);
+  --color-cat-1: var(--cat-1);
+  --color-cat-2: var(--cat-2);
+  --color-cat-3: var(--cat-3);
+  --color-cat-4: var(--cat-4);
+  --color-cat-5: var(--cat-5);
+  --color-cat-6: var(--cat-6);
+  --color-cat-7: var(--cat-7);
   --color-chart-income: var(--chart-income);
   --color-chart-expense: var(--chart-expense);
   --color-expense: var(--expense);
@@ -222,6 +229,29 @@
   --sidebar-accent-foreground: oklch(0.96 0.012 240);
   --sidebar-border: oklch(0.29 0.03 258);
   --sidebar-ring: oklch(0.76 0.12 218 / 55%);
+}
+
+/*
+ * Palet kategorikal (identitas, mis. jenis aset) — palet referensi skill dataviz, tervalidasi
+ * (CVD ΔE adjacent ≥ 9,1 terang / 8,4 gelap). Urutan tetap; warna mengikuti entitas, bukan peringkat.
+ */
+:root {
+  --cat-1: #2a78d6;
+  --cat-2: #eb6834;
+  --cat-3: #1baf7a;
+  --cat-4: #eda100;
+  --cat-5: #e87ba4;
+  --cat-6: #008300;
+  --cat-7: #6250d6;
+}
+.dark {
+  --cat-1: #3987e5;
+  --cat-2: #d95926;
+  --cat-3: #199e70;
+  --cat-4: #c98500;
+  --cat-5: #d55181;
+  --cat-6: #0ca30c;
+  --cat-7: #9085e9;
 }
 
 @layer base {

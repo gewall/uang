@@ -12,6 +12,7 @@ import {
   inet,
   integer,
   jsonb,
+  numeric,
   pgEnum,
   pgTable,
   text,
@@ -143,12 +144,17 @@ export const categories = pgTable(
     color: text().notNull().default("slate"),
     /** kategori bawaan yang dipakai fitur lain (Bunga, Pajak, Investasi…): tidak bisa dihapus */
     isSystem: boolean().notNull().default(false),
+    /** penanda tetap untuk kategori sistem (tidak berubah walau nama diganti), lihat SYSTEM_CATEGORY */
+    systemKey: text(),
     sortOrder: integer().notNull().default(0),
     archivedAt: timestamp({ withTimezone: true }),
     ...timestamps,
   },
   (t) => [
     uniqueIndex("categories_user_kind_name_uq").on(t.userId, t.kind, t.name),
+    uniqueIndex("categories_user_system_key_uq")
+      .on(t.userId, t.systemKey)
+      .where(sql`${t.systemKey} is not null`),
     index("categories_parent_idx").on(t.parentId),
   ],
 );
@@ -189,6 +195,8 @@ export const transactions = pgTable(
       .default(sql`'{}'::text[]`),
     source: transactionSourceEnum().notNull().default("manual"),
     importBatchId: uuid(),
+    /** tetap mengubah saldo dompet, tapi tidak dihitung sebagai pemasukan/pengeluaran (mis. beli/jual investasi) */
+    excludeFromStats: boolean().notNull().default(false),
     /** ID transaksi dari sumber eksternal (mis. #ID Jago) untuk mencegah import ganda */
     externalId: text(),
     ...timestamps,
@@ -237,6 +245,83 @@ export const budgets = pgTable(
   ],
 );
 
+// ── Investasi ────────────────────────────────────────────────────────
+export const assetTypeEnum = pgEnum("asset_type", [
+  "saham",
+  "reksadana",
+  "emas",
+  "crypto",
+  "deposito",
+  "obligasi",
+  "lainnya",
+]);
+export const investmentTxnTypeEnum = pgEnum("investment_txn_type", ["buy", "sell", "dividend"]);
+
+export const investmentAssets = pgTable(
+  "investment_assets",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text().notNull(),
+    type: assetTypeEnum().notNull(),
+    ticker: text(),
+    currency: text().notNull().default("IDR"),
+    /** satuan unit untuk tampilan: lembar, unit, gram, koin… */
+    unitLabel: text().notNull().default("unit"),
+    /** harga per 1 unit (sen), diupdate manual */
+    currentPrice: bigint({ mode: "number" }),
+    priceUpdatedAt: timestamp({ withTimezone: true }),
+    note: text(),
+    archivedAt: timestamp({ withTimezone: true }),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex("investment_assets_user_name_uq").on(t.userId, t.name),
+    check("investment_assets_price_nonneg", sql`${t.currentPrice} is null or ${t.currentPrice} >= 0`),
+  ],
+);
+
+export const investmentTxns = pgTable(
+  "investment_txns",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    assetId: uuid()
+      .notNull()
+      .references(() => investmentAssets.id, { onDelete: "cascade" }),
+    type: investmentTxnTypeEnum().notNull(),
+    occurredAt: timestamp({ withTimezone: true }).notNull(),
+    /** jumlah unit (beli/jual); null untuk dividen */
+    units: numeric({ precision: 24, scale: 8, mode: "number" }),
+    /** harga per unit (sen); null untuk dividen */
+    price: bigint({ mode: "number" }),
+    fee: bigint({ mode: "number" }).notNull().default(0),
+    /** uang yang berpindah (sen): beli = units×price + fee; jual = units×price − fee; dividen = nominal */
+    amount: bigint({ mode: "number" }).notNull(),
+    /** transaksi dompet tertaut (opsional) */
+    transactionId: uuid().references(() => transactions.id, { onDelete: "set null" }),
+    note: text(),
+    ...timestamps,
+  },
+  (t) => [
+    index("investment_txns_asset_idx").on(t.assetId, t.occurredAt),
+    uniqueIndex("investment_txns_transaction_uq")
+      .on(t.transactionId)
+      .where(sql`${t.transactionId} is not null`),
+    check("investment_txns_amount_nonneg", sql`${t.amount} >= 0`),
+    check("investment_txns_fee_nonneg", sql`${t.fee} >= 0`),
+    check(
+      "investment_txns_shape",
+      sql`(${t.type} = 'dividend' and ${t.units} is null and ${t.price} is null)
+       or (${t.type} <> 'dividend' and ${t.units} > 0 and ${t.price} >= 0)`,
+    ),
+  ],
+);
+
 export type User = typeof users.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
 export type Wallet = typeof wallets.$inferSelect;
@@ -245,3 +330,7 @@ export type WalletType = (typeof walletTypeEnum.enumValues)[number];
 export type CategoryKind = (typeof categoryKindEnum.enumValues)[number];
 export type Transaction = typeof transactions.$inferSelect;
 export type TransactionType = (typeof transactionTypeEnum.enumValues)[number];
+export type InvestmentAsset = typeof investmentAssets.$inferSelect;
+export type InvestmentTxn = typeof investmentTxns.$inferSelect;
+export type AssetType = (typeof assetTypeEnum.enumValues)[number];
+export type InvestmentTxnType = (typeof investmentTxnTypeEnum.enumValues)[number];

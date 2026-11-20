@@ -3,7 +3,7 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db";
-import { categories, transactions, wallets } from "@/db/schema";
+import { categories, investmentTxns, transactions, wallets } from "@/db/schema";
 import { changedFields, logActivity } from "@/lib/activity-log";
 import { requireUser } from "@/lib/auth/dal";
 import { type FormState, fieldErrorsOf } from "@/lib/form";
@@ -11,6 +11,14 @@ import { getRequestMeta } from "@/lib/request";
 import { transactionFormSchema } from "./schema";
 
 export type TransactionFormState = FormState & { again?: boolean };
+
+const LINKED_MESSAGE = "Transaksi ini tertaut ke investasi — ubah atau hapus dari halaman Investasi.";
+
+/** Transaksi yang dibuat fitur investasi hanya boleh diubah dari sana (supaya riwayat aset tetap konsisten). */
+async function isInvestmentLinked(transactionId: string): Promise<boolean> {
+  const n = await db.$count(investmentTxns, eq(investmentTxns.transactionId, transactionId));
+  return n > 0;
+}
 
 const revalidate = () => ["/transaksi", "/dompet", "/dashboard", "/budget"].forEach((p) => revalidatePath(p));
 
@@ -60,6 +68,7 @@ export async function saveTransaction(_prev: TransactionFormState, formData: For
   };
 
   if (id) {
+    if (await isInvestmentLinked(id)) return { message: LINKED_MESSAGE };
     const [before] = await db
       .select()
       .from(transactions)
@@ -96,6 +105,7 @@ export async function saveTransaction(_prev: TransactionFormState, formData: For
 
 export async function deleteTransaction(id: string): Promise<FormState> {
   const user = await requireUser();
+  if (await isInvestmentLinked(id)) return { message: LINKED_MESSAGE };
   const [row] = await db
     .delete(transactions)
     .where(and(eq(transactions.id, id), eq(transactions.userId, user.id)))

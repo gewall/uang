@@ -2,7 +2,7 @@ import "server-only";
 import { and, desc, eq, gte, ilike, inArray, lt, or, type SQL, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { db } from "@/db";
-import { categories, transactions, wallets } from "@/db/schema";
+import { categories, investmentTxns, transactions, wallets } from "@/db/schema";
 import { monthRange } from "@/lib/dates";
 import { parseMoneyInput } from "@/lib/money";
 import type { TransactionFilters } from "./filters";
@@ -73,6 +73,8 @@ export async function listTransactions(userId: string, f: TransactionFilters) {
       counterparty: transactions.counterparty,
       tags: transactions.tags,
       source: transactions.source,
+      excludeFromStats: transactions.excludeFromStats,
+      investmentAssetId: investmentTxns.assetId,
       walletId: transactions.walletId,
       toWalletId: transactions.toWalletId,
       categoryId: transactions.categoryId,
@@ -90,6 +92,7 @@ export async function listTransactions(userId: string, f: TransactionFilters) {
     .leftJoin(toWallets, eq(toWallets.id, transactions.toWalletId))
     .leftJoin(categories, eq(categories.id, transactions.categoryId))
     .leftJoin(parentCats, eq(parentCats.id, categories.parentId))
+    .leftJoin(investmentTxns, eq(investmentTxns.transactionId, transactions.id))
     .where(where)
     .orderBy(desc(transactions.occurredAt), desc(transactions.createdAt))
     .limit(f.limit + 1);
@@ -110,7 +113,7 @@ export async function listTransactions(userId: string, f: TransactionFilters) {
     .from(transactions)
     .innerJoin(wallets, eq(wallets.id, transactions.walletId))
     .leftJoin(categories, eq(categories.id, transactions.categoryId))
-    .where(and(where, eq(wallets.currency, "IDR")));
+    .where(and(where, eq(wallets.currency, "IDR"), eq(transactions.excludeFromStats, false)));
 
   return {
     items: rows.slice(0, f.limit),

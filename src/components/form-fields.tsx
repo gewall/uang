@@ -49,6 +49,7 @@ export function MoneyInput({
   autoFocus,
   size = "default",
   inputRef,
+  onValueChange,
 }: {
   id?: string;
   name: string;
@@ -59,6 +60,8 @@ export function MoneyInput({
   autoFocus?: boolean;
   size?: "default" | "lg";
   inputRef?: React.Ref<HTMLInputElement>;
+  /** dipanggil setiap input berubah dengan hasil parse (sen) atau null */
+  onValueChange?: (minor: number | null) => void;
 }) {
   const [value, setValue] = useState(defaultMinor !== undefined ? formatMoneyInput(defaultMinor) : "");
   const parsed = value ? parseMoneyInput(value) : null;
@@ -84,7 +87,10 @@ export function MoneyInput({
           autoFocus={autoFocus}
           placeholder="0"
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => {
+            setValue(e.target.value);
+            onValueChange?.(e.target.value ? parseMoneyInput(e.target.value) : null);
+          }}
           aria-invalid={invalid || bad || undefined}
           className={cn(
             "tabular-nums",

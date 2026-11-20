@@ -3,6 +3,7 @@
 import { Menu, Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Suspense } from "react";
 import { useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { isActivePath, MOBILE_NAV } from "./nav-config";
@@ -12,7 +13,19 @@ const itemClass =
 
 /** Bottom navigation khusus layar < md. Tombol + di tengah untuk tambah transaksi cepat. */
 export function MobileNav() {
-  const pathname = usePathname();
+  // lihat AppSidebar: usePathname perlu batas Suspense di route dinamis
+  return (
+    <Suspense fallback={<MobileNavBar pathname={null} />}>
+      <ActiveMobileNav />
+    </Suspense>
+  );
+}
+
+function ActiveMobileNav() {
+  return <MobileNavBar pathname={usePathname()} />;
+}
+
+function MobileNavBar({ pathname }: { pathname: string | null }) {
   const { setOpenMobile } = useSidebar();
   const [first, second, third] = MOBILE_NAV;
 
@@ -21,8 +34,8 @@ export function MobileNav() {
       key={item.href}
       href={item.href}
       className={itemClass}
-      data-active={isActivePath(pathname, item.href)}
-      aria-current={isActivePath(pathname, item.href) ? "page" : undefined}
+      data-active={pathname ? isActivePath(pathname, item.href) : false}
+      aria-current={pathname && isActivePath(pathname, item.href) ? "page" : undefined}
     >
       <item.icon className="size-5" />
       <span className="truncate">{item.title}</span>

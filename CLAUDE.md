@@ -39,7 +39,11 @@ Drizzle ORM + PostgreSQL 18 (shared DB di VPS). Plan lengkap: `C:\Users\USER\.cl
 ## Progres
 
 - [x] Fase 0 — setup: Next.js, shadcn, Drizzle, vitest, DB `uang` & `uang_dev` di VPS
-- [ ] Fase 1 — auth + deploy awal
+- [~] Fase 1 — auth selesai (login + rate limit, logout, proxy, DAL, ganti password, sesi aktif, `seed:user`);
+      deploy (Dockerfile, GHCR, VPS) ditunda sampai repo GitHub dibuat
+- Auth: `proxy.ts` hanya cek tanda tangan JWT; validasi session sebenarnya di `getCurrentUser()` (`src/lib/auth/dal.ts`).
+  Dengan `cacheComponents`, komponen yang memanggil `requireUser()`/membaca cookie harus di dalam `<Suspense>`
+  (`(app)/loading.tsx` sudah jadi boundary untuk semua halaman app).
 - [ ] Fase 2 — layout & tema Warm/Cold
 - [ ] Fase 3 — dompet & kategori
 - [ ] Fase 4 — transaksi

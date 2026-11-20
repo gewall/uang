@@ -9,6 +9,7 @@ import { ChangePasswordForm } from "@/features/auth/components/change-password-f
 import { listActiveSessions } from "@/features/auth/queries";
 import { AppearanceSettings } from "@/features/settings/components/appearance-settings";
 import { requireUser } from "@/lib/auth/dal";
+import { describeUserAgent } from "@/lib/user-agent";
 
 export const metadata: Metadata = { title: "Pengaturan" };
 
@@ -125,29 +126,4 @@ function RevokeButton({ id }: { id: string }) {
       </Button>
     </form>
   );
-}
-
-function describeUserAgent(ua: string | null): string {
-  if (!ua) return "Tidak diketahui";
-  const browser = /Edg\//.test(ua)
-    ? "Edge"
-    : /Chrome\//.test(ua)
-      ? "Chrome"
-      : /Firefox\//.test(ua)
-        ? "Firefox"
-        : /Safari\//.test(ua)
-          ? "Safari"
-          : "Browser";
-  const os = /Windows/.test(ua)
-    ? "Windows"
-    : /Android/.test(ua)
-      ? "Android"
-      : /iPhone|iPad/.test(ua)
-        ? "iOS"
-        : /Mac OS/.test(ua)
-          ? "macOS"
-          : /Linux/.test(ua)
-            ? "Linux"
-            : "";
-  return os ? `${browser} · ${os}` : browser;
 }

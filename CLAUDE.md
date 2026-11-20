@@ -95,7 +95,11 @@ Drizzle ORM + PostgreSQL 18 (shared DB di VPS). Plan lengkap: `C:\Users\USER\.cl
 - Route dinamis + `cacheComponents`: komponen yang memakai `usePathname()` di layout harus di dalam `<Suspense>`
   (sudah: nav sidebar, bottom nav, judul header) — kalau tidak, build gagal di route `[param]`.
 - Unit (kuantitas) diparse dengan `parseQuantity()` (`src/lib/number.ts`), format Indonesia.
-- [ ] Fase 7 — activity log
+- [x] Fase 7 — activity log: halaman `/log` (kalimat terbaca, detail perubahan `<details>`, filter jenis `?jenis=`,
+      grup per hari, paginasi cursor `?sebelum=`), kartu keamanan (login sebelumnya, login gagal 7 hari)
+- Log: setiap `logActivity()` baru WAJIB punya terjemahan di `features/activity/describe.ts` (+ test). Simpan nama
+  entitas di `diff.name` saat tambah/hapus (riwayat memakai nama saat kejadian). Uang di diff dalam sen; field
+  id/ikon/warna ditampilkan "diubah" saja. Jangan pernah menaruh password / API key di `diff`.
 - [ ] Fase 8 — import (Jago PDF, CSV/XLSX) / export
 - [ ] Fase 9 — AI rekomendasi
 - [ ] Fase 10 — polishing

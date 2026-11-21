@@ -16,7 +16,18 @@ export type DescribedActivity = {
   changes: { label: string; from?: string; to: string }[];
   tone: "default" | "positive" | "danger" | "warning";
   icon:
-    "plus" | "pencil" | "trash" | "login" | "logout" | "shield" | "archive" | "key" | "copy" | "upload" | "download";
+    | "plus"
+    | "pencil"
+    | "trash"
+    | "login"
+    | "logout"
+    | "shield"
+    | "archive"
+    | "key"
+    | "copy"
+    | "upload"
+    | "download"
+    | "sparkles";
 };
 
 export const ENTITY_GROUPS = {
@@ -26,6 +37,7 @@ export const ENTITY_GROUPS = {
   budget: { label: "Budget", entities: ["budget"] },
   investasi: { label: "Investasi", entities: ["investment_asset", "investment_txn"] },
   data: { label: "Import/Export", entities: ["import", "export", "backup"] },
+  ai: { label: "AI", entities: ["ai_chat", "ai_budget", "ai_settings"] },
   keamanan: { label: "Keamanan", entities: ["auth", "password", "session"] },
 } as const;
 export type EntityGroup = keyof typeof ENTITY_GROUPS;
@@ -172,6 +184,29 @@ export function describeActivity(a: ActivityInput): DescribedActivity {
       changes: [],
       tone: "warning",
       icon: "upload",
+    };
+  }
+
+  // ── AI ──
+  if (a.entity === "ai_chat")
+    return { title: "Bertanya ke Rekomendasi AI", changes: [], tone: "default", icon: "sparkles" };
+  if (a.entity === "ai_budget")
+    return { title: "Meminta rekomendasi pembagian budget dari AI", changes: [], tone: "default", icon: "sparkles" };
+  if (a.entity === "ai_settings") {
+    if (d.apiKeyRemoved) return { title: "Menghapus API key AI", changes: [], tone: "warning", icon: "key" };
+    return {
+      title: d.apiKeyChanged ? "Mengganti API key & pengaturan AI" : "Mengubah pengaturan AI",
+      changes: [],
+      tone: d.apiKeyChanged ? "warning" : "default",
+      icon: "key",
+    };
+  }
+  if (a.entity === "budget" && d.fromAi) {
+    return {
+      title: `Menerapkan ${d.count} budget dari rekomendasi AI`,
+      changes: [],
+      tone: "positive",
+      icon: "sparkles",
     };
   }
 

@@ -110,5 +110,12 @@ Drizzle ORM + PostgreSQL 18 (shared DB di VPS). Plan lengkap: `C:\Users\USER\.cl
 - `/api/*` tanpa sesi → 401 dari `proxy.ts` (bukan redirect).
 - Layout: grid berisi teks `nowrap`/tab panjang → pakai `grid-cols-[minmax(0,1fr)]` supaya tidak melebar keluar kartu.
 - Next 16 menyimpan halaman sebelumnya tersembunyi di DOM (Activity) → di uji E2E batasi selector ke `main:visible`.
-- [ ] Fase 9 — AI rekomendasi
+- [x] Fase 9 — AI rekomendasi: pengaturan dari UI (key AES-256-GCM `lib/crypto.ts`, model, base URL, temperature,
+      max tokens, tes koneksi), rekomendasi budget terstruktur + terapkan, chat streaming + preset, riwayat
+- AI SDK **v7** (bukan v4/v5): `streamText({ instructions, messages })` + `createUIMessageStreamResponse({ stream:
+  toUIMessageStream({ stream: result.stream, originalMessages, onEnd }) })`; structured output via
+  `generateText({ output: Output.object({ schema }) })`. Baca `node_modules/ai/docs` sebelum mengubah.
+- Konteks AI (`features/ai/context.ts`) HANYA agregat (bulan/kategori/dompet/portofolio) — jangan tambahkan
+  catatan, pihak lawan, nomor rekening. Kategori dari AI dicocokkan lewat NAMA (bukan ID).
+- Uji tanpa key asli: server tiruan OpenAI-compatible + base URL `http://localhost:<port>` di pengaturan AI.
 - [ ] Fase 10 — polishing

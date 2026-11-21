@@ -10,6 +10,8 @@ import { listActiveSessions } from "@/features/auth/queries";
 import { AppearanceSettings } from "@/features/settings/components/appearance-settings";
 import { requireUser } from "@/lib/auth/dal";
 import { describeUserAgent } from "@/lib/user-agent";
+import { AiSettingsCard } from "@/features/ai/components/ai-settings-card";
+import { getAiPublicSettings, MODEL_SUGGESTIONS } from "@/features/ai/config";
 
 export const metadata: Metadata = { title: "Pengaturan" };
 
@@ -21,7 +23,7 @@ const dateFmt = new Intl.DateTimeFormat("id-ID", {
 
 export default async function SettingsPage() {
   const user = await requireUser();
-  const activeSessions = await listActiveSessions(user.id);
+  const [activeSessions, ai] = await Promise.all([listActiveSessions(user.id), getAiPublicSettings(user.id)]);
 
   return (
     <div className="grid gap-6">
@@ -36,6 +38,8 @@ export default async function SettingsPage() {
           <AppearanceSettings />
         </CardContent>
       </Card>
+
+      <AiSettingsCard settings={ai} modelSuggestions={MODEL_SUGGESTIONS} />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <Card>

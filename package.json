@@ -20,8 +20,11 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\" \"tests/**/*.ts\" \"scripts/**/*.ts\""
   },
   "dependencies": {
+    "@ai-sdk/deepseek": "^3.0.89",
+    "@ai-sdk/react": "^4.0.183",
     "@base-ui/react": "^1.9.0",
     "@node-rs/argon2": "^2.2.2",
+    "ai": "^7.0.179",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.5.2",
     "drizzle-orm": "^0.45.4",
@@ -33,7 +36,9 @@
     "postgres": "^4.1.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "react-markdown": "^10.1.0",
     "recharts": "^3.8.0",
+    "remark-gfm": "^4.0.1",
     "server-only": "^0.0.1",
     "shadcn": "^4.23.0",
     "sonner": "^2.0.8",

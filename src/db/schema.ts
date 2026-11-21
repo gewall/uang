@@ -13,6 +13,7 @@ import {
   integer,
   jsonb,
   numeric,
+  real,
   pgEnum,
   pgTable,
   text,
@@ -295,6 +296,40 @@ export const categorizationRules = pgTable(
     ...timestamps,
   },
   (t) => [uniqueIndex("categorization_rules_user_kind_pattern_uq").on(t.userId, t.kind, t.pattern)],
+);
+
+// ── AI ───────────────────────────────────────────────────────────────
+/** Konfigurasi AI per user — diisi dari halaman Pengaturan (bukan env). API key terenkripsi AES-256-GCM. */
+export const aiSettings = pgTable("ai_settings", {
+  userId: uuid()
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  provider: text().notNull().default("deepseek"),
+  baseUrl: text().notNull().default("https://api.deepseek.com"),
+  model: text().notNull().default("deepseek-chat"),
+  temperature: real().notNull().default(0.4),
+  maxTokens: integer().notNull().default(2000),
+  apiKeyEnc: text(),
+  apiKeyLast4: text(),
+  ...timestamps,
+});
+
+export const aiConversations = pgTable(
+  "ai_conversations",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    title: text().notNull(),
+    /** pesan dalam format UIMessage (AI SDK) */
+    messages: jsonb()
+      .$type<unknown[]>()
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    ...timestamps,
+  },
+  (t) => [index("ai_conversations_user_idx").on(t.userId, t.updatedAt.desc())],
 );
 
 // ── Investasi ────────────────────────────────────────────────────────

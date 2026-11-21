@@ -11,6 +11,7 @@ import {
   Plus,
   ShieldAlert,
   ShieldCheck,
+  Sparkles,
   Trash2,
   Upload,
 } from "lucide-react";
@@ -45,6 +46,7 @@ const ICONS: Record<DescribedActivity["icon"], LucideIcon> = {
   copy: Copy,
   upload: Upload,
   download: Download,
+  sparkles: Sparkles,
 };
 
 const TONE: Record<DescribedActivity["tone"], string> = {

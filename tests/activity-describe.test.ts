@@ -105,6 +105,23 @@ describe("import/export", () => {
   });
 });
 
+describe("AI", () => {
+  it("chat, budget, pengaturan", () => {
+    expect(describeActivity({ action: "ai", entity: "ai_chat", diff: { model: "deepseek-chat" } }).title).toBe(
+      "Bertanya ke Rekomendasi AI",
+    );
+    expect(describeActivity({ action: "update", entity: "ai_settings", diff: { apiKeyChanged: true } }).title).toMatch(
+      /Mengganti API key/,
+    );
+    expect(describeActivity({ action: "update", entity: "ai_settings", diff: { apiKeyRemoved: true } }).title).toBe(
+      "Menghapus API key AI",
+    );
+    expect(describeActivity({ action: "create", entity: "budget", diff: { fromAi: true, count: 5 } }).title).toBe(
+      "Menerapkan 5 budget dari rekomendasi AI",
+    );
+  });
+});
+
 describe("formatValue", () => {
   it("berbagai tipe", () => {
     expect(norm(formatValue("amount", 115_713_073))).toBe("Rp 1.157.130,73");

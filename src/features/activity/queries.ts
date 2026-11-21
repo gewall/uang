@@ -1,7 +1,7 @@
 import "server-only";
 import { and, count, desc, eq, gte, inArray, lt, type SQL } from "drizzle-orm";
 import { db } from "@/db";
-import { activityLogs, categories, investmentAssets, wallets } from "@/db/schema";
+import { activityLogs, categories, debts, goals, investmentAssets, recurringRules, wallets } from "@/db/schema";
 import { ENTITY_GROUPS, type EntityGroup } from "./describe";
 
 export const ACTIVITY_PAGE_SIZE = 50;
@@ -46,7 +46,14 @@ function nameKey(r: Row): string {
 
 /** Nama entitas saat ini (yang masih ada) untuk wallet / category / investment_asset / budget. */
 async function lookupNames(userId: string, rows: Row[]): Promise<Map<string, string>> {
-  const ids = { wallet: new Set<string>(), category: new Set<string>(), investment_asset: new Set<string>() };
+  const ids = {
+    wallet: new Set<string>(),
+    category: new Set<string>(),
+    investment_asset: new Set<string>(),
+    recurring: new Set<string>(),
+    goal: new Set<string>(),
+    debt: new Set<string>(),
+  };
   for (const r of rows) {
     if (r.entity === "budget" && typeof r.diff?.categoryId === "string") ids.category.add(r.diff.categoryId);
     else if (r.entityId && r.entity in ids) ids[r.entity as keyof typeof ids].add(r.entityId);
@@ -72,6 +79,28 @@ async function lookupNames(userId: string, rows: Row[]): Promise<Map<string, str
           .where(and(eq(investmentAssets.userId, userId), inArray(investmentAssets.id, [...ids.investment_asset])))
       : [],
   ]);
+  // entitas fase 10 (nama terkini)
+  const extra = await Promise.all([
+    ids.recurring.size
+      ? db
+          .select({ id: recurringRules.id, name: recurringRules.name })
+          .from(recurringRules)
+          .where(and(eq(recurringRules.userId, userId), inArray(recurringRules.id, [...ids.recurring])))
+      : [],
+    ids.goal.size
+      ? db
+          .select({ id: goals.id, name: goals.name })
+          .from(goals)
+          .where(and(eq(goals.userId, userId), inArray(goals.id, [...ids.goal])))
+      : [],
+    ids.debt.size
+      ? db
+          .select({ id: debts.id, name: debts.person })
+          .from(debts)
+          .where(and(eq(debts.userId, userId), inArray(debts.id, [...ids.debt])))
+      : [],
+  ]);
+  (["recurring", "goal", "debt"] as const).forEach((k, i) => extra[i].forEach((x) => out.set(`${k}:${x.id}`, x.name)));
   for (const x of w) out.set(`wallet:${x.id}`, x.name);
   for (const x of c) out.set(`category:${x.id}`, x.name);
   for (const x of a) out.set(`investment_asset:${x.id}`, x.name);

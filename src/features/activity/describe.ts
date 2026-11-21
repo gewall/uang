@@ -36,6 +36,7 @@ export const ENTITY_GROUPS = {
   kategori: { label: "Kategori", entities: ["category"] },
   budget: { label: "Budget", entities: ["budget"] },
   investasi: { label: "Investasi", entities: ["investment_asset", "investment_txn"] },
+  rencana: { label: "Rencana", entities: ["recurring", "recurring_post", "goal", "debt", "debt_payment"] },
   data: { label: "Import/Export", entities: ["import", "export", "backup"] },
   ai: { label: "AI", entities: ["ai_chat", "ai_budget", "ai_settings"] },
   keamanan: { label: "Keamanan", entities: ["auth", "password", "session"] },
@@ -50,6 +51,9 @@ const ENTITY_LABEL: Record<string, string> = {
   investment_asset: "aset",
   investment_txn: "transaksi investasi",
   session: "sesi",
+  recurring: "transaksi berulang",
+  goal: "target tabungan",
+  debt: "hutang/piutang",
 };
 
 const FIELD_LABEL: Record<string, string> = {
@@ -74,10 +78,29 @@ const FIELD_LABEL: Record<string, string> = {
   currentPrice: "Harga",
   units: "Jumlah unit",
   price: "Harga per unit",
+  frequency: "Periode",
+  interval: "Tiap",
+  startDate: "Mulai",
+  endDate: "Berakhir",
+  active: "Aktif",
+  targetAmount: "Target",
+  savedAmount: "Terkumpul",
+  targetDate: "Tanggal target",
+  person: "Nama",
+  dueDate: "Jatuh tempo",
 };
 
 /** field bernilai uang (sen) */
-const MONEY_FIELDS = new Set(["initialBalance", "amount", "toAmount", "fee", "currentPrice", "price"]);
+const MONEY_FIELDS = new Set([
+  "initialBalance",
+  "amount",
+  "toAmount",
+  "fee",
+  "currentPrice",
+  "price",
+  "targetAmount",
+  "savedAmount",
+]);
 /** field id/teknis — cukup disebut "diubah" tanpa nilai mentah */
 const OPAQUE_FIELDS = new Set(["walletId", "toWalletId", "categoryId", "parentId", "icon", "color"]);
 
@@ -94,6 +117,10 @@ const TYPE_LABEL: Record<string, string> = {
   credit: "kartu kredit",
   investment: "rekening investasi",
   other: "lainnya",
+  daily: "harian",
+  weekly: "mingguan",
+  monthly: "bulanan",
+  yearly: "tahunan",
 };
 
 const dateFmt = new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Jakarta" });
@@ -184,6 +211,30 @@ export function describeActivity(a: ActivityInput): DescribedActivity {
       changes: [],
       tone: "warning",
       icon: "upload",
+    };
+  }
+
+  // ── rencana (fase 10) ──
+  if (a.entity === "recurring_post") {
+    return { title: `Mencatat ${d.count} transaksi berulang otomatis`, changes: [], tone: "positive", icon: "plus" };
+  }
+  if (a.entity === "recurring" && typeof d.active === "boolean" && Object.keys(d).length === 1) {
+    return {
+      title: `${d.active ? "Melanjutkan" : "Menjeda"} transaksi berulang ${q(a.entityName)}`.trim(),
+      changes: [],
+      tone: "default",
+      icon: "pencil",
+    };
+  }
+  if (a.entity === "debt_payment") {
+    const who = q(d.name);
+    if (a.action === "delete")
+      return { title: `Menghapus pembayaran ${who} ${money(d.amount)}`, changes: [], tone: "danger", icon: "trash" };
+    return {
+      title: `Mencatat pembayaran ${who} ${money(d.amount)}${d.settled ? " — lunas" : ""}`,
+      changes: [],
+      tone: "positive",
+      icon: "plus",
     };
   }
 

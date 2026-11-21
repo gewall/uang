@@ -27,7 +27,7 @@ export type TransactionDraft = {
   occurredAt?: Date;
   note?: string | null;
   tags?: string[];
-  source?: "manual" | "import";
+  source?: "manual" | "import" | "recurring";
 };
 
 const TYPES: { value: TransactionType; icon: typeof ArrowUpRight; active: string }[] = [
@@ -259,6 +259,9 @@ export function TransactionForm({
       </Field>
 
       {draft.source === "import" && <p className="text-xs text-muted-foreground">Transaksi ini berasal dari import.</p>}
+      {draft.source === "recurring" && (
+        <p className="text-xs text-muted-foreground">Dicatat otomatis dari transaksi berulang.</p>
+      )}
 
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center">
         {isEdit && (

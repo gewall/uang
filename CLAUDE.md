@@ -117,7 +117,10 @@ Drizzle ORM + PostgreSQL 18 (shared DB di VPS). Plan lengkap: `C:\Users\USER\.cl
 - Konteks AI (`features/ai/context.ts`) HANYA agregat (bulan/kategori/dompet/portofolio) — jangan tambahkan
   catatan, pihak lawan, nomor rekening. Kategori dari AI dicocokkan lewat NAMA (bukan ID).
 - Uji tanpa key asli: server tiruan OpenAI-compatible + base URL `http://localhost:<port>` di pengaturan AI.
-- [~] Fase 10 — polishing: PWA (manifest + ikon). Opsional berikutnya: transaksi berulang, goals, hutang/piutang
+- [x] Fase 10 — PWA, transaksi berulang (`/berulang`, dicatat otomatis saat halaman dashboard/transaksi/berulang
+      dibuka — `postDueRecurring`, externalId `rec:<rule>:<tanggal>`, tanpa cron), target tabungan (`/target`, progres dari
+      saldo dompet atau setoran manual), hutang/piutang (`/hutang`, pembayaran tidak mengubah saldo dompet), pengingat di
+      dashboard, backup/restore mencakup tabel baru. README + LICENSE MIT (Copyright gewall)
 
 ## Deploy (production)
 

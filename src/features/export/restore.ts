@@ -8,8 +8,12 @@ import {
   budgets,
   categories,
   categorizationRules,
+  debtPayments,
+  debts,
+  goals,
   investmentAssets,
   investmentTxns,
+  recurringRules,
   transactions,
   wallets,
 } from "@/db/schema";
@@ -32,11 +36,16 @@ const backupSchema = z.object({
     investmentAssets: z.array(z.record(z.string(), z.unknown())),
     investmentTxns: z.array(z.record(z.string(), z.unknown())),
     categorizationRules: z.array(z.record(z.string(), z.unknown())),
+    // fase 10 — opsional supaya backup lama tetap bisa dipulihkan
+    recurringRules: z.array(z.record(z.string(), z.unknown())).default([]),
+    goals: z.array(z.record(z.string(), z.unknown())).default([]),
+    debts: z.array(z.record(z.string(), z.unknown())).default([]),
+    debtPayments: z.array(z.record(z.string(), z.unknown())).default([]),
   }),
 });
 
 /** Kolom timestamp tersimpan sebagai string ISO di JSON → Date. */
-const DATE_FIELDS = ["createdAt", "updatedAt", "archivedAt", "occurredAt", "priceUpdatedAt"];
+const DATE_FIELDS = ["createdAt", "updatedAt", "archivedAt", "occurredAt", "priceUpdatedAt", "settledAt"];
 function revive(rows: Row[], userId: string): Row[] {
   return rows.map((r) => {
     const out: Row = { ...r, userId };
@@ -96,8 +105,22 @@ export async function restoreBackup(_prev: FormState, formData: FormData): Promi
   const catRows = withId(d.categories)
     .map((c) => ({ ...c, parentId: c.parentId ? ref(c.parentId) : null }))
     .sort((x, y) => Number(Boolean(x.parentId)) - Number(Boolean(y.parentId))); // induk dulu
+  const recurringRows = withId(d.recurringRules).map((r) => ({
+    ...r,
+    walletId: ref(r.walletId),
+    toWalletId: r.toWalletId ? ref(r.toWalletId) : null,
+    categoryId: r.categoryId ? ref(r.categoryId) : null,
+  }));
+  // externalId transaksi berulang memuat id aturan → ikut dipetakan supaya tidak tercatat ulang
+  const remapExternal = (v: unknown) => {
+    if (typeof v !== "string" || !v.startsWith("rec:")) return v;
+    const [, rule, date] = v.split(":");
+    const mapped = ids.get(rule);
+    return mapped ? `rec:${mapped}:${date}` : v;
+  };
   const txRows = withId(d.transactions).map((x) => ({
     ...x,
+    externalId: remapExternal(x.externalId),
     walletId: ref(x.walletId),
     toWalletId: x.toWalletId ? ref(x.toWalletId) : null,
     categoryId: x.categoryId ? ref(x.categoryId) : null,
@@ -110,6 +133,9 @@ export async function restoreBackup(_prev: FormState, formData: FormData): Promi
     transactionId: i.transactionId ? ref(i.transactionId) : null,
   }));
   const ruleRows = withId(d.categorizationRules).map((r) => ({ ...r, categoryId: ref(r.categoryId) }));
+  const goalRows = withId(d.goals).map((g) => ({ ...g, walletId: g.walletId ? ref(g.walletId) : null }));
+  const debtRows = withId(d.debts);
+  const paymentRows = withId(d.debtPayments).map((p) => ({ ...p, debtId: ref(p.debtId) }));
 
   try {
     await db.transaction(async (tx) => {
@@ -117,6 +143,8 @@ export async function restoreBackup(_prev: FormState, formData: FormData): Promi
       await tx.delete(categorizationRules).where(eq(categorizationRules.userId, user.id));
       await tx.delete(budgets).where(eq(budgets.userId, user.id));
       await tx.delete(categories).where(eq(categories.userId, user.id));
+      await tx.delete(goals).where(eq(goals.userId, user.id));
+      await tx.delete(debts).where(eq(debts.userId, user.id));
       await insertChunks(categories, catRows, tx);
       await insertChunks(wallets, walletRows, tx);
       await insertChunks(transactions, txRows, tx);
@@ -124,6 +152,10 @@ export async function restoreBackup(_prev: FormState, formData: FormData): Promi
       await insertChunks(investmentAssets, assetRows, tx);
       await insertChunks(investmentTxns, invRows, tx);
       await insertChunks(categorizationRules, ruleRows, tx);
+      await insertChunks(recurringRules, recurringRows, tx);
+      await insertChunks(goals, goalRows, tx);
+      await insertChunks(debts, debtRows, tx);
+      await insertChunks(debtPayments, paymentRows, tx);
     });
   } catch {
     return { message: "Restore gagal — data backup tidak konsisten atau ID sudah dipakai. Tidak ada yang diubah." };

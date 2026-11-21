@@ -17,7 +17,12 @@ import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CashflowChart } from "@/features/dashboard/components/cashflow-chart";
+import { Reminders } from "@/features/dashboard/components/reminders";
 import { changeRatio, getDashboard } from "@/features/dashboard/queries";
+import { listDebts } from "@/features/debts/queries";
+import { listGoals } from "@/features/goals/queries";
+import { postDueRecurring } from "@/features/recurring/posting";
+import { listRecurring } from "@/features/recurring/queries";
 import { requireUser } from "@/lib/auth/dal";
 import { formatMonth, formatTime, formatDayHeader, wibDateKey } from "@/lib/dates";
 import { type Currency, formatMoney } from "@/lib/money";
@@ -29,7 +34,13 @@ const pct = new Intl.NumberFormat("id-ID", { style: "percent", maximumFractionDi
 
 export default async function DashboardPage() {
   const user = await requireUser();
-  const d = await getDashboard(user.id);
+  await postDueRecurring(user.id); // jadwal berulang jatuh tempo dicatat dulu
+  const [d, recurring, debtList, goals] = await Promise.all([
+    getDashboard(user.id),
+    listRecurring(user.id),
+    listDebts(user.id),
+    listGoals(user.id),
+  ]);
   const incomeChange = changeRatio(d.thisMonth.income, d.lastMonth.income);
   const expenseChange = changeRatio(d.thisMonth.expense, d.lastMonth.expense);
 
@@ -240,6 +251,8 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Reminders recurring={recurring} debts={debtList.items} goals={goals} today={wibDateKey(new Date())} />
     </div>
   );
 }

@@ -105,6 +105,29 @@ describe("import/export", () => {
   });
 });
 
+describe("rencana (fase 10)", () => {
+  it("berulang, target, hutang", () => {
+    expect(describeActivity({ action: "create", entity: "recurring_post", diff: { count: 3 } }).title).toBe(
+      "Mencatat 3 transaksi berulang otomatis",
+    );
+    expect(describeActivity({ action: "create", entity: "recurring", diff: { name: "Gaji" } }).title).toMatch(/Gaji/);
+    expect(
+      describeActivity({
+        action: "create",
+        entity: "debt_payment",
+        diff: { name: "Budi", amount: 5_000_000, settled: true },
+      }).title,
+    ).toMatch(/^Mencatat pembayaran "Budi" Rp\s50\.000 — lunas$/);
+    const goal = describeActivity({
+      action: "update",
+      entity: "goal",
+      diff: { savedAmount: { from: 0, to: 10_000_000 } },
+    });
+    expect(goal.changes[0].label).toBe("Terkumpul");
+    expect(goal.changes[0].to).toMatch(/^Rp\s100\.000$/);
+  });
+});
+
 describe("AI", () => {
   it("chat, budget, pengaturan", () => {
     expect(describeActivity({ action: "ai", entity: "ai_chat", diff: { model: "deepseek-chat" } }).title).toBe(

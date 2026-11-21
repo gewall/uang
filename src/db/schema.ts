@@ -162,7 +162,7 @@ export const categories = pgTable(
 
 // ── Transaksi ────────────────────────────────────────────────────────
 export const transactionTypeEnum = pgEnum("transaction_type", ["income", "expense", "transfer"]);
-export const transactionSourceEnum = pgEnum("transaction_source", ["manual", "import"]);
+export const transactionSourceEnum = pgEnum("transaction_source", ["manual", "import", "recurring"]);
 
 export const transactions = pgTable(
   "transactions",
@@ -409,6 +409,106 @@ export const investmentTxns = pgTable(
   ],
 );
 
+// ── Fase 10: transaksi berulang, target tabungan, hutang/piutang ──
+export const recurrenceFreqEnum = pgEnum("recurrence_freq", ["daily", "weekly", "monthly", "yearly"]);
+
+/** Aturan transaksi berulang. Transaksi dibuat otomatis saat jatuh tempo (externalId `rec:<id>:<tanggal>`). */
+export const recurringRules = pgTable(
+  "recurring_rules",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text().notNull(),
+    type: transactionTypeEnum().notNull(),
+    walletId: uuid()
+      .notNull()
+      .references(() => wallets.id, { onDelete: "restrict" }),
+    toWalletId: uuid().references(() => wallets.id, { onDelete: "restrict" }),
+    categoryId: uuid().references(() => categories.id, { onDelete: "restrict" }),
+    amount: bigint({ mode: "number" }).notNull(),
+    note: text(),
+    frequency: recurrenceFreqEnum().notNull(),
+    /** tiap N hari/minggu/bulan/tahun */
+    interval: integer().notNull().default(1),
+    /** tanggal pertama (WIB); hari-nya jadi patokan untuk bulanan/tahunan */
+    startDate: date({ mode: "string" }).notNull(),
+    /** jadwal berikutnya yang belum dibuat */
+    nextDate: date({ mode: "string" }).notNull(),
+    endDate: date({ mode: "string" }),
+    active: boolean().notNull().default(true),
+    ...timestamps,
+  },
+  (t) => [
+    index("recurring_rules_user_idx").on(t.userId, t.nextDate),
+    check("recurring_amount_positive", sql`${t.amount} > 0`),
+    check("recurring_interval_positive", sql`${t.interval} between 1 and 365`),
+  ],
+);
+
+/** Target tabungan. Progres dari saldo dompet tertaut, atau setoran manual (savedAmount). */
+export const goals = pgTable(
+  "goals",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text().notNull(),
+    targetAmount: bigint({ mode: "number" }).notNull(),
+    savedAmount: bigint({ mode: "number" }).notNull().default(0),
+    walletId: uuid().references(() => wallets.id, { onDelete: "set null" }),
+    targetDate: date({ mode: "string" }),
+    icon: text().notNull().default("piggy-bank"),
+    color: text().notNull().default("emerald"),
+    note: text(),
+    archivedAt: timestamp({ withTimezone: true }),
+    ...timestamps,
+  },
+  (t) => [index("goals_user_idx").on(t.userId), check("goals_target_positive", sql`${t.targetAmount} > 0`)],
+);
+
+export const debtDirectionEnum = pgEnum("debt_direction", ["payable", "receivable"]);
+
+/** Hutang (payable: aku berutang) / piutang (receivable: orang berutang padaku). */
+export const debts = pgTable(
+  "debts",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    direction: debtDirectionEnum().notNull(),
+    person: text().notNull(),
+    amount: bigint({ mode: "number" }).notNull(),
+    startDate: date({ mode: "string" }).notNull(),
+    dueDate: date({ mode: "string" }),
+    note: text(),
+    settledAt: timestamp({ withTimezone: true }),
+    ...timestamps,
+  },
+  (t) => [index("debts_user_idx").on(t.userId), check("debts_amount_positive", sql`${t.amount} > 0`)],
+);
+
+export const debtPayments = pgTable(
+  "debt_payments",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    debtId: uuid()
+      .notNull()
+      .references(() => debts.id, { onDelete: "cascade" }),
+    amount: bigint({ mode: "number" }).notNull(),
+    paidDate: date({ mode: "string" }).notNull(),
+    note: text(),
+    ...timestamps,
+  },
+  (t) => [index("debt_payments_debt_idx").on(t.debtId), check("debt_payments_positive", sql`${t.amount} > 0`)],
+);
+
 export type User = typeof users.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
 export type Wallet = typeof wallets.$inferSelect;
@@ -422,3 +522,9 @@ export type InvestmentTxn = typeof investmentTxns.$inferSelect;
 export type AssetType = (typeof assetTypeEnum.enumValues)[number];
 export type InvestmentTxnType = (typeof investmentTxnTypeEnum.enumValues)[number];
 export type ImportBatch = typeof importBatches.$inferSelect;
+export type RecurringRule = typeof recurringRules.$inferSelect;
+export type RecurrenceFreq = (typeof recurrenceFreqEnum.enumValues)[number];
+export type Goal = typeof goals.$inferSelect;
+export type Debt = typeof debts.$inferSelect;
+export type DebtPayment = typeof debtPayments.$inferSelect;
+export type DebtDirection = (typeof debtDirectionEnum.enumValues)[number];

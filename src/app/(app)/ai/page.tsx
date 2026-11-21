@@ -101,9 +101,9 @@ export default async function AiPage({ searchParams }: PageProps<"/ai">) {
             {conversations.length === 0 ? (
               <p className="text-sm text-muted-foreground">Belum ada percakapan.</p>
             ) : (
-              <ul className="grid gap-1">
+              <ul className="grid grid-cols-[minmax(0,1fr)] gap-1">
                 {conversations.map((cv) => (
-                  <li key={cv.id} className="group flex items-center gap-1">
+                  <li key={cv.id} className="group flex min-w-0 items-center gap-1">
                     <Link
                       href={`/ai?c=${cv.id}`}
                       className={cn(

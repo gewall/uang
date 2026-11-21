@@ -7,6 +7,7 @@ import { TransactionFilterBar } from "@/features/transactions/components/transac
 import { TransactionsView } from "@/features/transactions/components/transactions-view";
 import { activeFilterCount, filtersToSearch, PAGE_SIZE, parseFilters } from "@/features/transactions/filters";
 import { listTags, listTransactions } from "@/features/transactions/queries";
+import { postDueRecurring } from "@/features/recurring/posting";
 import { listWalletOptions } from "@/features/wallets/queries";
 import { requireUser } from "@/lib/auth/dal";
 import { formatMonth } from "@/lib/dates";
@@ -19,6 +20,7 @@ export default async function TransactionsPage({ searchParams }: PageProps<"/tra
   const user = await requireUser();
   const params = await searchParams;
   const filters = parseFilters(params);
+  await postDueRecurring(user.id); // jadwal berulang yang jatuh tempo dicatat dulu
 
   const [{ items, hasMore, summary }, categories, wallets, tags] = await Promise.all([
     listTransactions(user.id, filters),

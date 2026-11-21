@@ -118,6 +118,18 @@ export default async function SettingsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <p className="text-center text-xs text-muted-foreground">
+        uang · open source (MIT) · dibuat oleh{" "}
+        <a
+          href="https://github.com/gewall/uang"
+          target="_blank"
+          rel="noreferrer"
+          className="font-medium underline underline-offset-2"
+        >
+          gewall
+        </a>
+      </p>
     </div>
   );
 }

@@ -6,8 +6,12 @@ import {
   budgets,
   categories,
   categorizationRules,
+  debtPayments,
+  debts,
+  goals,
   investmentAssets,
   investmentTxns,
+  recurringRules,
   transactions,
   wallets,
 } from "@/db/schema";
@@ -92,7 +96,7 @@ export async function exportSheets(userId: string) {
 export async function exportBackup(userId: string) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- userId sengaja dibuang dari backup
   const strip = <T extends { userId: string }>(rows: T[]) => rows.map(({ userId: _u, ...r }) => r);
-  const [w, c, t, b, a, i, r] = await Promise.all([
+  const [w, c, t, b, a, i, r, rr, g, d, dp] = await Promise.all([
     db.select().from(wallets).where(eq(wallets.userId, userId)),
     db.select().from(categories).where(eq(categories.userId, userId)),
     db.select().from(transactions).where(eq(transactions.userId, userId)),
@@ -100,6 +104,10 @@ export async function exportBackup(userId: string) {
     db.select().from(investmentAssets).where(eq(investmentAssets.userId, userId)),
     db.select().from(investmentTxns).where(eq(investmentTxns.userId, userId)),
     db.select().from(categorizationRules).where(eq(categorizationRules.userId, userId)),
+    db.select().from(recurringRules).where(eq(recurringRules.userId, userId)),
+    db.select().from(goals).where(eq(goals.userId, userId)),
+    db.select().from(debts).where(eq(debts.userId, userId)),
+    db.select().from(debtPayments).where(eq(debtPayments.userId, userId)),
   ]);
   return {
     app: "uang",
@@ -114,6 +122,10 @@ export async function exportBackup(userId: string) {
       investmentAssets: strip(a),
       investmentTxns: strip(i),
       categorizationRules: strip(r),
+      recurringRules: strip(rr),
+      goals: strip(g),
+      debts: strip(d),
+      debtPayments: strip(dp),
     },
   };
 }

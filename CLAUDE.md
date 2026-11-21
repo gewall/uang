@@ -43,8 +43,7 @@ Drizzle ORM + PostgreSQL 18 (shared DB di VPS). Plan lengkap: `C:\Users\USER\.cl
 ## Progres
 
 - [x] Fase 0 — setup: Next.js, shadcn, Drizzle, vitest, DB `uang` & `uang_dev` di VPS
-- [~] Fase 1 — auth selesai (login + rate limit, logout, proxy, DAL, ganti password, sesi aktif, `seed:user`);
-      deploy (Dockerfile, GHCR, VPS) ditunda sampai repo GitHub dibuat
+- [x] Fase 1 — auth (login + rate limit, logout, proxy, DAL, ganti password, sesi aktif, `seed:user`); deploy di Vercel
 - Auth: `proxy.ts` hanya cek tanda tangan JWT; validasi session sebenarnya di `getCurrentUser()` (`src/lib/auth/dal.ts`).
   Dengan `cacheComponents`, komponen yang memanggil `requireUser()`/membaca cookie harus di dalam `<Suspense>`
   (`(app)/loading.tsx` sudah jadi boundary untuk semua halaman app).
@@ -118,4 +117,17 @@ Drizzle ORM + PostgreSQL 18 (shared DB di VPS). Plan lengkap: `C:\Users\USER\.cl
 - Konteks AI (`features/ai/context.ts`) HANYA agregat (bulan/kategori/dompet/portofolio) — jangan tambahkan
   catatan, pihak lawan, nomor rekening. Kategori dari AI dicocokkan lewat NAMA (bukan ID).
 - Uji tanpa key asli: server tiruan OpenAI-compatible + base URL `http://localhost:<port>` di pengaturan AI.
-- [ ] Fase 10 — polishing
+- [~] Fase 10 — polishing: PWA (manifest + ikon). Opsional berikutnya: transaksi berulang, goals, hutang/piutang
+
+## Deploy (production)
+
+- Web: **Vercel** project `uang` (region `sin1`), repo publik `github.com/gewall/uang`, push ke `main` = deploy production.
+  Domain `uang.gewall.my.id` (DNS zone gewall.my.id ada di Vercel).
+- DB: Postgres shared di VPS, database `uang`, lewat jalur publik `139.190.103.199:25432` (container `pg-public` =
+  socat → alias `postgres`, `~/infra/postgres-public`). pg_hba (blok `# uang-public` di pg-1 & pg-2): dari proxy hanya
+  `uang@uang` dengan TLS. TLS: CA sendiri di VPS `~/infra/postgres/tls/ca.crt` → env Vercel `DATABASE_CA` (diverifikasi).
+- Env Vercel (production saja): `DATABASE_URL`, `DATABASE_CA`, `JWT_SECRET`, `APP_ENCRYPTION_KEY`, `APP_URL`, `COOKIE_SECURE=true`.
+  `APP_ENCRYPTION_KEY` production JANGAN diganti (API key AI tersimpan tidak bisa didekripsi lagi).
+- **Migrasi production manual** sebelum push yang mengubah schema: tunnel (`npm run db:tunnel`) lalu
+  `DATABASE_URL=<url uang via 127.0.0.1:15432> npm run db:migrate`. Kredensial di VPS `~/infra/postgres/credentials`.
+- Kode tidak bergantung `TZ` (semua tanggal eksplisit Asia/Jakarta) — Vercel berjalan UTC.
